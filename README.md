@@ -66,6 +66,9 @@ vexi                  # start a chat session in the current project
 vexi --lang es        # start in Spanish
 vexi config           # show config location + provider + model
 vexi config reset     # delete the stored API key
+vexi skill list       # show active skills
+vexi skill add <src>  # add a skill (local .md file or GitHub URL)
+vexi skill remove <n> # remove a skill
 ```
 
 Inside the chat:
@@ -73,8 +76,50 @@ Inside the chat:
 ```
 /help    show available commands
 /model   switch model (e.g. /model gpt-4o)
+/memory  show compressed project memory
 /clear   clear conversation history
 /exit    quit
+```
+
+## 🧠 Project memory — Context Compression Engine
+
+Most AI coding tools forget earlier decisions once the conversation gets long.
+Vexi doesn't delete old messages — it **compresses** them:
+
+- Recent messages always stay in full.
+- Older messages are folded into a *running summary* + key decision points
+  (e.g. *"User chose JWT for authentication"*) stored in `.vexi/memory.json`.
+- Memory is loaded automatically on every session start — Vexi remembers
+  your decisions **across sessions**, even in large projects.
+- Inspect it anytime with `/memory`.
+
+## 🗺️ Full project understanding
+
+On startup Vexi scans your whole project (not just the open file) and injects
+a compact map into every prompt: languages, frameworks, and architecture
+layers (frontend / backend / database / auth / devops).
+
+Scanner safeguards: respects `.gitignore`, always skips `node_modules`,
+`.git`, `dist`, `build`, `coverage`, and ignores files larger than 500KB —
+so it never floods the context window.
+
+## 🎯 Custom Skills
+
+Teach Vexi *your* conventions with plain markdown files in `.vexi/skills/`:
+
+```
+.vexi/skills/
+  api-style.md     "All API endpoints follow REST + Zod validation"
+  arabic-docs.md   "All documentation written in Arabic"
+  my-stack.md      "Always use Next.js + Supabase + Tailwind"
+```
+
+Every skill is injected into the system prompt on session start, so generated
+code follows your style automatically. Share skills via GitHub:
+
+```bash
+vexi skill add https://github.com/user/react-best-practices
+vexi skill add ./docs/conventions.md
 ```
 
 ## Roadmap
@@ -82,7 +127,7 @@ Inside the chat:
 | Phase | Feature | Status |
 | ----- | ------- | ------ |
 | 1 | BYOK · easy install · terminal chat | ✅ done |
-| 2 | AI Context Compression (running summary memory) · full project understanding · custom skills | 🔜 |
+| 2 | AI Context Compression (running summary memory) · full project understanding · custom skills | ✅ done |
 | 3 | **Vexi Replay** (export sessions as animated HTML) · multilingual code explanation | 🔜 |
 | 4 | Visual code graph · MCP support (client **and** server mode) | 🔜 |
 | 5 | **Vexi Learn** — adapts to your personal coding style | 🔜 |
@@ -96,7 +141,7 @@ Inside the chat:
 | Works fully offline/local | ✅ no server, no account | ✅ | ❌ account | ❌ account |
 | Native-language code explanations | ✅ ar/es/pt/fr (Phase 3) | ❌ | ❌ | ❌ |
 | Session replay export | ✅ (Phase 3) | ❌ | ❌ | ❌ |
-| Persistent project memory | ✅ (Phase 2) | partial | partial | ✅ |
+| Persistent project memory | ✅ | partial | partial | ✅ |
 | MCP server mode (be a tool for other agents) | ✅ (Phase 4) | ❌ | ❌ | ❌ |
 | License | MIT | MIT | proprietary | proprietary |
 
@@ -119,8 +164,12 @@ src/
 ├── agent.ts        chat loop + first-run onboarding
 ├── config.ts       ~/.vexi/config.json (atomic, chmod 600)
 ├── providers/      key detection + streaming API clients
+├── scanner/        project mapper (.gitignore-aware, size-capped)
+├── memory/         Context Compression Engine (.vexi/memory.json)
+├── skills/         custom skills loader (.vexi/skills/*.md)
 ├── i18n/           5-language UI strings + RTL strategy
-└── ui/             terminal branding (chalk, ora)
+├── ui/             terminal branding (chalk, ora)
+└── utils/          atomic JSON file writes
 ```
 
 1. Fork & clone

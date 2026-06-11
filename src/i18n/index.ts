@@ -34,6 +34,15 @@ export interface Strings {
   modelSwitched: string; // {model}
   configReset: string;
   configResetNone: string;
+  scanning: string;
+  scanned: string; // {files}
+  memoryLoaded: string; // {decisions}
+  memoryEmpty: string;
+  skillsLoaded: string; // {names}
+  skillAdded: string; // {name}
+  skillRemoved: string; // {name}
+  skillNotFound: string; // {name}
+  skillListEmpty: string;
 }
 
 const en: Strings = {
@@ -53,10 +62,19 @@ const en: Strings = {
   emptyKey: 'No key entered.',
   historyCleared: 'Conversation history cleared.',
   helpText:
-    '/help   show this help\n/model  switch model (e.g. /model gpt-4o)\n/clear  clear conversation history\n/exit   quit Vexi',
+    '/help    show this help\n/model   switch model (e.g. /model gpt-4o)\n/memory  show compressed project memory\n/clear   clear conversation history\n/exit    quit Vexi',
   modelSwitched: 'Model switched to {model}',
   configReset: 'Configuration deleted. Run `vexi` to set up again.',
   configResetNone: 'No configuration found.',
+  scanning: 'Scanning project…',
+  scanned: 'Project scanned: {files} files mapped.',
+  memoryLoaded: 'Project memory loaded ({decisions} decisions remembered).',
+  memoryEmpty: 'No project memory yet — it builds up as you chat.',
+  skillsLoaded: 'Active skills: {names}',
+  skillAdded: 'Skill "{name}" added.',
+  skillRemoved: 'Skill "{name}" removed.',
+  skillNotFound: 'Skill "{name}" not found.',
+  skillListEmpty: 'No skills yet. Add one with: vexi skill add <file-or-url>',
 };
 
 const es: Strings = {
@@ -76,10 +94,19 @@ const es: Strings = {
   emptyKey: 'No se introdujo ninguna clave.',
   historyCleared: 'Historial de conversación borrado.',
   helpText:
-    '/help   mostrar esta ayuda\n/model  cambiar modelo (p. ej. /model gpt-4o)\n/clear  borrar historial de conversación\n/exit   salir de Vexi',
+    '/help    mostrar esta ayuda\n/model   cambiar modelo (p. ej. /model gpt-4o)\n/memory  ver la memoria comprimida del proyecto\n/clear   borrar historial de conversación\n/exit    salir de Vexi',
   modelSwitched: 'Modelo cambiado a {model}',
   configReset: 'Configuración eliminada. Ejecuta `vexi` para configurar de nuevo.',
   configResetNone: 'No se encontró configuración.',
+  scanning: 'Escaneando el proyecto…',
+  scanned: 'Proyecto escaneado: {files} archivos mapeados.',
+  memoryLoaded: 'Memoria del proyecto cargada ({decisions} decisiones recordadas).',
+  memoryEmpty: 'Aún no hay memoria del proyecto — se construye mientras conversas.',
+  skillsLoaded: 'Skills activas: {names}',
+  skillAdded: 'Skill "{name}" añadida.',
+  skillRemoved: 'Skill "{name}" eliminada.',
+  skillNotFound: 'Skill "{name}" no encontrada.',
+  skillListEmpty: 'Aún no hay skills. Añade una con: vexi skill add <archivo-o-url>',
 };
 
 const pt: Strings = {
@@ -99,10 +126,19 @@ const pt: Strings = {
   emptyKey: 'Nenhuma chave inserida.',
   historyCleared: 'Histórico de conversa apagado.',
   helpText:
-    '/help   mostrar esta ajuda\n/model  trocar modelo (ex.: /model gpt-4o)\n/clear  apagar histórico de conversa\n/exit   sair do Vexi',
+    '/help    mostrar esta ajuda\n/model   trocar modelo (ex.: /model gpt-4o)\n/memory  ver a memória comprimida do projeto\n/clear   apagar histórico de conversa\n/exit    sair do Vexi',
   modelSwitched: 'Modelo alterado para {model}',
   configReset: 'Configuração excluída. Execute `vexi` para configurar novamente.',
   configResetNone: 'Nenhuma configuração encontrada.',
+  scanning: 'Escaneando o projeto…',
+  scanned: 'Projeto escaneado: {files} arquivos mapeados.',
+  memoryLoaded: 'Memória do projeto carregada ({decisions} decisões lembradas).',
+  memoryEmpty: 'Ainda não há memória do projeto — ela se constrói enquanto você conversa.',
+  skillsLoaded: 'Skills ativas: {names}',
+  skillAdded: 'Skill "{name}" adicionada.',
+  skillRemoved: 'Skill "{name}" removida.',
+  skillNotFound: 'Skill "{name}" não encontrada.',
+  skillListEmpty: 'Ainda não há skills. Adicione uma com: vexi skill add <arquivo-ou-url>',
 };
 
 const fr: Strings = {
@@ -122,10 +158,19 @@ const fr: Strings = {
   emptyKey: 'Aucune clé saisie.',
   historyCleared: 'Historique de conversation effacé.',
   helpText:
-    '/help   afficher cette aide\n/model  changer de modèle (ex. /model gpt-4o)\n/clear  effacer l\'historique de conversation\n/exit   quitter Vexi',
+    '/help    afficher cette aide\n/model   changer de modèle (ex. /model gpt-4o)\n/memory  voir la mémoire compressée du projet\n/clear   effacer l\'historique de conversation\n/exit    quitter Vexi',
   modelSwitched: 'Modèle changé pour {model}',
   configReset: 'Configuration supprimée. Lancez `vexi` pour reconfigurer.',
   configResetNone: 'Aucune configuration trouvée.',
+  scanning: 'Analyse du projet…',
+  scanned: 'Projet analysé : {files} fichiers cartographiés.',
+  memoryLoaded: 'Mémoire du projet chargée ({decisions} décisions mémorisées).',
+  memoryEmpty: 'Pas encore de mémoire de projet — elle se construit au fil de la conversation.',
+  skillsLoaded: 'Skills actives : {names}',
+  skillAdded: 'Skill « {name} » ajoutée.',
+  skillRemoved: 'Skill « {name} » supprimée.',
+  skillNotFound: 'Skill « {name} » introuvable.',
+  skillListEmpty: 'Aucune skill pour l\'instant. Ajoutez-en une avec : vexi skill add <fichier-ou-url>',
 };
 
 const STRINGS: Record<Lang, Strings> = {

@@ -1,5 +1,13 @@
 /**
  * Vexi agent: first-run onboarding (BYOK) + interactive chat loop.
+ *
+ * Phase 2 additions:
+ * - Full project understanding: the scanner maps the codebase on startup
+ *   and a compact summary is injected into every AI prompt.
+ * - Context Compression Engine: older messages are folded into a running
+ *   summary in .vexi/memory.json instead of being deleted.
+ * - Custom Skills: .vexi/skills/*.md conventions are injected into the
+ *   system prompt.
  */
 
 import { basename } from 'node:path';
@@ -18,11 +26,19 @@ import {
   type Provider,
   type ProviderId,
 } from './providers/index.js';
+import { scanProject, projectSummary, type ProjectMap } from './scanner/index.js';
+import {
+  loadMemory,
+  saveMemory,
+  memoryBlock,
+  compressIntoMemory,
+  KEEP_RECENT,
+  COMPRESS_INTERVAL,
+  type ProjectMemory,
+} from './memory/index.js';
+import { loadSkills, skillsBlock } from './skills/index.js';
 import { ARABIC_RTL_NOTE, getStrings, t, type Lang, type Strings } from './i18n/index.js';
 import { accent, dim, err, ok, printBanner, printStatusLine, userPrompt, vexiLabel, warn } from './ui/index.js';
-
-/** Max messages kept in the rolling history (Phase 2 adds real compression). */
-const MAX_HISTORY = 30;
 
 interface AgentOptions {
   lang: Lang;
@@ -49,18 +65,71 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
   }
 
   let provider = createProvider(config.provider, config.apiKey, config.model);
+  const root = process.cwd();
+
+  // ── Full project understanding: scan + load memory + load skills ──────
+  const scanSpinner = ora({ text: dim(s.scanning), spinner: 'dots' }).start();
+  let project: ProjectMap | null = null;
+  try {
+    project = await scanProject(root);
+    scanSpinner.succeed(dim(t(s.scanned, { files: String(project.fileCount) })));
+  } catch {
+    scanSpinner.stop(); // scanning is best-effort — chat works without it
+  }
+  let memory: ProjectMemory = await loadMemory(root);
+  const skills = await loadSkills(root);
 
   printStatusLine({
-    project: basename(process.cwd()),
+    project: project?.stack.length
+      ? `${basename(root)} (${project.stack.slice(0, 4).join(', ')})`
+      : basename(root),
     provider: PROVIDER_INFO[config.provider].label,
     model: provider.model,
     lang: opts.lang,
   });
+
+  if (memory.summary || memory.decisions.length > 0) {
+    console.log(dim(t(s.memoryLoaded, { decisions: String(memory.decisions.length) })));
+  }
+  if (skills.length > 0) {
+    console.log(dim(t(s.skillsLoaded, { names: skills.map((sk) => sk.name).join(', ') })));
+  }
   console.log(dim(s.chatHint) + '\n');
 
-  // ── Chat loop ──────────────────────────────────────────────────────────
+  // ── Chat loop ────────────────────────────────────────────────────────
   const history: ChatMessage[] = [];
-  const system: ChatMessage = { role: 'system', content: buildSystemPrompt(opts.lang) };
+  const projectBlock = project ? projectSummary(project) : '';
+  const skillsText = skillsBlock(skills);
+  let compressing = false;
+
+  /**
+   * The system prompt is rebuilt every turn because the memory block
+   * changes as the Context Compression Engine folds in old messages.
+   */
+  const buildSystem = (): ChatMessage => ({
+    role: 'system',
+    content: buildSystemPrompt(opts.lang, projectBlock, skillsText, memoryBlock(memory)),
+  });
+
+  /**
+   * Running-summary compression: when enough messages have accumulated
+   * beyond the keep-window, fold the oldest into .vexi/memory.json in the
+   * background. Recent messages always stay verbatim.
+   */
+  const maybeCompress = (): void => {
+    if (compressing || history.length < KEEP_RECENT + COMPRESS_INTERVAL) return;
+    const archived = history.splice(0, history.length - KEEP_RECENT);
+    compressing = true;
+    compressIntoMemory(provider, memory, archived)
+      .then(async (updated) => {
+        memory = updated;
+        await saveMemory(root, updated);
+      })
+      .catch(() => {}) // compression must never break the chat
+      .finally(() => {
+        compressing = false;
+      });
+  };
 
   while (true) {
     let line: string;
@@ -90,6 +159,16 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
           history.length = 0;
           console.log(ok(s.historyCleared) + '\n');
           continue;
+        case '/memory': {
+          if (memory.summary || memory.decisions.length > 0) {
+            if (memory.summary) console.log(dim(memory.summary));
+            for (const decision of memory.decisions) console.log(accent('• ') + decision);
+            console.log();
+          } else {
+            console.log(dim(s.memoryEmpty) + '\n');
+          }
+          continue;
+        }
         case '/model': {
           const model = rest.join(' ').trim();
           if (model) {
@@ -110,13 +189,12 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
 
     // ── Send to the AI ──
     history.push({ role: 'user', content: text });
-    trimHistory(history);
 
     const spinner = ora({ text: dim(s.thinking), spinner: 'dots' }).start();
     let started = false;
 
     try {
-      const reply = await provider.stream([system, ...history], (chunk) => {
+      const reply = await provider.stream([buildSystem(), ...history], (chunk) => {
         if (!started) {
           spinner.stop();
           process.stdout.write(vexiLabel + ' ');
@@ -127,6 +205,7 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
       if (!started) spinner.stop(); // empty reply edge case
       process.stdout.write('\n\n');
       history.push({ role: 'assistant', content: reply });
+      maybeCompress();
     } catch (e) {
       spinner.stop();
       if (started) process.stdout.write('\n');
@@ -186,7 +265,12 @@ async function firstRunSetup(s: Strings, lang: Lang): Promise<VexiConfig> {
 }
 
 /** System prompt for the chat session. */
-function buildSystemPrompt(lang: Lang): string {
+function buildSystemPrompt(
+  lang: Lang,
+  projectBlock: string,
+  skillsText: string,
+  memoryText: string,
+): string {
   const langNames: Record<Lang, string> = {
     en: 'English',
     ar: 'Arabic',
@@ -194,18 +278,15 @@ function buildSystemPrompt(lang: Lang): string {
     pt: 'Portuguese',
     fr: 'French',
   };
-  return [
+  const parts = [
     'You are Vexi, an open-source AI coding agent running in the user\'s terminal.',
     'Be concise, technical and direct. Prefer code over prose.',
     'Format code in fenced Markdown blocks with the language tag.',
     `Environment: OS=${platform()}, cwd=${process.cwd()}.`,
     `The user's preferred language is ${langNames[lang]}; reply in that language unless asked otherwise (code and identifiers stay in English).`,
-  ].join('\n');
-}
-
-/** Keep only the most recent messages (simple Phase 1 strategy). */
-function trimHistory(history: ChatMessage[]): void {
-  if (history.length > MAX_HISTORY) {
-    history.splice(0, history.length - MAX_HISTORY);
-  }
+  ];
+  if (projectBlock) parts.push('', '## Project map', projectBlock);
+  if (memoryText) parts.push('', memoryText);
+  if (skillsText) parts.push('', skillsText);
+  return parts.join('\n');
 }
