@@ -37,6 +37,7 @@ import {
   type ProjectMemory,
 } from './memory/index.js';
 import { loadSkills, skillsBlock } from './skills/index.js';
+import { SessionRecorder } from './replay/recorder.js';
 import { ARABIC_RTL_NOTE, getStrings, t, type Lang, type Strings } from './i18n/index.js';
 import { accent, dim, err, ok, printBanner, printStatusLine, userPrompt, vexiLabel, warn } from './ui/index.js';
 
@@ -78,6 +79,14 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
   }
   let memory: ProjectMemory = await loadMemory(root);
   const skills = await loadSkills(root);
+
+  // ── Session recording (Vexi Replay) — saved after every turn ─────────
+  const recorder = new SessionRecorder(root, {
+    project: basename(root),
+    provider: PROVIDER_INFO[config.provider].label,
+    model: provider.model,
+    lang: opts.lang,
+  });
 
   printStatusLine({
     project: project?.stack.length
@@ -189,6 +198,7 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
 
     // ── Send to the AI ──
     history.push({ role: 'user', content: text });
+    recorder.add('user', text);
 
     const spinner = ora({ text: dim(s.thinking), spinner: 'dots' }).start();
     let started = false;
@@ -205,6 +215,8 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
       if (!started) spinner.stop(); // empty reply edge case
       process.stdout.write('\n\n');
       history.push({ role: 'assistant', content: reply });
+      recorder.add('assistant', reply);
+      void recorder.save(); // fire-and-forget, atomic
       maybeCompress();
     } catch (e) {
       spinner.stop();

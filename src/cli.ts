@@ -8,17 +8,25 @@
  *   vexi skill list            show active skills
  *   vexi skill add <src>       add a skill (local .md file or GitHub URL)
  *   vexi skill remove <name>   remove a skill
+ *   vexi replay                list recorded sessions
+ *   vexi replay --export       export latest session as standalone HTML
+ *   vexi explain <path> --ar   explain a file/folder in your language
  */
 
 import { Command } from 'commander';
+import ora from 'ora';
 import { runAgent } from './agent.js';
 import { loadConfig, resetConfig, CONFIG_PATH } from './config.js';
 import { loadSkills, addSkill, removeSkill } from './skills/index.js';
+import { listSessions } from './replay/recorder.js';
+import { exportReplay } from './replay/export.js';
+import { explain } from './explain/index.js';
+import { createProvider, PROVIDER_INFO } from './providers/index.js';
+import { openInDefaultApp } from './utils/open.js';
 import { detectSystemLang, getStrings, normalizeLang, t, SUPPORTED_LANGS, type Lang } from './i18n/index.js';
-import { PROVIDER_INFO } from './providers/index.js';
 import { accent, dim, err, ok } from './ui/index.js';
 
-export const VERSION = '0.2.0';
+export const VERSION = '0.3.0';
 
 /** Resolve the active language: --lang flag > saved config > system locale. */
 async function resolveLang(flag?: string): Promise<Lang> {
@@ -115,6 +123,90 @@ export function buildCli(): Command {
       const removed = await removeSkill(process.cwd(), name);
       console.log(removed ? ok(t(s.skillRemoved, { name })) : err(t(s.skillNotFound, { name })));
       if (!removed) process.exitCode = 1;
+    });
+
+  // ── Vexi Replay (Feature 3) ─────────────────────────────────────────
+  program
+    .command('replay')
+    .description('List recorded sessions, or export one as a standalone HTML replay')
+    .option('-e, --export', 'export a session as HTML')
+    .option('-s, --session <name>', 'session file name (default: most recent)')
+    .option('-o, --out <file>', 'output HTML path')
+    .option('-l, --lang <lang>', `replay language (${SUPPORTED_LANGS.join('/')})`)
+    .action(async (options: { export?: boolean; session?: string; out?: string; lang?: string }) => {
+      const lang = await resolveLang(options.lang);
+      const s = getStrings(lang);
+
+      if (!options.export) {
+        const sessions = await listSessions(process.cwd());
+        if (sessions.length === 0) {
+          console.log(dim(s.replayNone));
+          return;
+        }
+        for (const file of sessions) console.log(accent(file));
+        console.log(dim('\nvexi replay --export [--session <name>] [--lang ar]'));
+        return;
+      }
+
+      try {
+        const path = await exportReplay(process.cwd(), {
+          lang,
+          session: options.session,
+          out: options.out,
+        });
+        console.log(ok(t(s.replayExported, { path })));
+        openInDefaultApp(path);
+      } catch (e) {
+        console.error(err(e instanceof Error ? e.message : String(e)));
+        process.exitCode = 1;
+      }
+    });
+
+  // ── Multilingual explain (Feature 4) ─────────────────────────────────
+  program
+    .command('explain <path>')
+    .description('Explain a file or folder in your language (Arabic opens as RTL HTML)')
+    .option('-l, --lang <lang>', `output language (${SUPPORTED_LANGS.join('/')})`)
+    .option('--ar', 'Arabic').option('--en', 'English').option('--es', 'Spanish')
+    .option('--pt', 'Portuguese').option('--fr', 'French')
+    .action(async (target: string, options: Record<string, string | boolean>) => {
+      // Shorthand flags (--ar) win over --lang, which wins over config/system.
+      const short = SUPPORTED_LANGS.find((l) => options[l] === true);
+      const lang = short ?? (await resolveLang(options.lang as string | undefined));
+      const s = getStrings(lang);
+
+      const cfg = await loadConfig();
+      if (!cfg) {
+        console.error(err('No API key configured — run `vexi` once to set up.'));
+        process.exitCode = 1;
+        return;
+      }
+      const provider = createProvider(cfg.provider, cfg.apiKey, cfg.model);
+
+      const spinner = ora({ text: dim(s.explaining), spinner: 'dots' }).start();
+      let started = false;
+      try {
+        const result = await explain(provider, target, lang, (chunk) => {
+          if (!started) {
+            spinner.stop();
+            started = true;
+          }
+          process.stdout.write(chunk);
+        });
+        spinner.stop();
+        if (result) {
+          // Arabic → written to RTL HTML + markdown, opened in the browser
+          console.log(ok(t(s.explainSavedFile, { path: result.htmlPath })));
+          console.log(dim(result.mdPath));
+          openInDefaultApp(result.htmlPath);
+        } else {
+          process.stdout.write('\n');
+        }
+      } catch (e) {
+        spinner.stop();
+        console.error(err(e instanceof Error ? e.message : String(e)));
+        process.exitCode = 1;
+      }
     });
 
   return program;

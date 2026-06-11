@@ -69,6 +69,10 @@ vexi config reset     # delete the stored API key
 vexi skill list       # show active skills
 vexi skill add <src>  # add a skill (local .md file or GitHub URL)
 vexi skill remove <n> # remove a skill
+vexi replay           # list recorded sessions
+vexi replay --export  # export a session as an animated HTML replay
+vexi explain auth.ts --ar   # explain a file in Arabic (opens RTL HTML)
+vexi explain src/ --es      # explain a folder in Spanish (in terminal)
 ```
 
 Inside the chat:
@@ -122,13 +126,45 @@ vexi skill add https://github.com/user/react-best-practices
 vexi skill add ./docs/conventions.md
 ```
 
+## 🎬 Vexi Replay
+
+Every chat session is automatically recorded to `.vexi/sessions/` (locally,
+nothing leaves your machine). Export any session as a **single standalone
+HTML file**:
+
+```bash
+vexi replay --export             # latest session
+vexi replay --export --lang ar   # full RTL Arabic replay
+```
+
+The generated page has play/pause and 1×/2×/4× speed controls, messages
+appear with their real timing and a character-by-character typing effect,
+and it ends with a session summary (duration, messages, model). An
+**Export video** button records the replay right in the browser
+(MediaRecorder — no ffmpeg, the CLI stays lightweight). Share it anywhere.
+
+## 🌍 Explain code in your native language
+
+> The first AI tool that explains any code in your native language.
+
+```bash
+vexi explain auth.ts --ar    # Arabic — opens a beautiful RTL HTML page
+vexi explain src/ --es       # Spanish — streams into the terminal
+vexi explain app.py --fr     # French
+```
+
+Structured output: file purpose → function-by-function breakdown with line
+numbers → how the pieces fit together. Latin-script languages stream
+directly in the terminal; Arabic is written to `.md` + `.html` (dir="rtl")
+and opened in your browser, where it renders perfectly.
+
 ## Roadmap
 
 | Phase | Feature | Status |
 | ----- | ------- | ------ |
 | 1 | BYOK · easy install · terminal chat | ✅ done |
 | 2 | AI Context Compression (running summary memory) · full project understanding · custom skills | ✅ done |
-| 3 | **Vexi Replay** (export sessions as animated HTML) · multilingual code explanation | 🔜 |
+| 3 | **Vexi Replay** (export sessions as animated HTML) · multilingual code explanation | ✅ done |
 | 4 | Visual code graph · MCP support (client **and** server mode) | 🔜 |
 | 5 | **Vexi Learn** — adapts to your personal coding style | 🔜 |
 
@@ -139,8 +175,8 @@ vexi skill add ./docs/conventions.md
 | Install | `npm i -g vexi` | binary/script | `npm i -g` | desktop app |
 | BYOK (any provider) | ✅ 5 providers, auto-detect | ✅ | ❌ Anthropic only | partial |
 | Works fully offline/local | ✅ no server, no account | ✅ | ❌ account | ❌ account |
-| Native-language code explanations | ✅ ar/es/pt/fr (Phase 3) | ❌ | ❌ | ❌ |
-| Session replay export | ✅ (Phase 3) | ❌ | ❌ | ❌ |
+| Native-language code explanations | ✅ ar/es/pt/fr | ❌ | ❌ | ❌ |
+| Session replay export | ✅ | ❌ | ❌ | ❌ |
 | Persistent project memory | ✅ | partial | partial | ✅ |
 | MCP server mode (be a tool for other agents) | ✅ (Phase 4) | ❌ | ❌ | ❌ |
 | License | MIT | MIT | proprietary | proprietary |
@@ -167,9 +203,11 @@ src/
 ├── scanner/        project mapper (.gitignore-aware, size-capped)
 ├── memory/         Context Compression Engine (.vexi/memory.json)
 ├── skills/         custom skills loader (.vexi/skills/*.md)
+├── replay/         session recorder + HTML replay export
+├── explain/        multilingual code explanation (RTL HTML for Arabic)
 ├── i18n/           5-language UI strings + RTL strategy
 ├── ui/             terminal branding (chalk, ora)
-└── utils/          atomic JSON file writes
+└── utils/          atomic JSON writes, cross-platform open
 ```
 
 1. Fork & clone

@@ -43,6 +43,10 @@ export interface Strings {
   skillRemoved: string; // {name}
   skillNotFound: string; // {name}
   skillListEmpty: string;
+  replayExported: string; // {path}
+  replayNone: string;
+  explaining: string;
+  explainSavedFile: string; // {path}
 }
 
 const en: Strings = {
@@ -75,6 +79,10 @@ const en: Strings = {
   skillRemoved: 'Skill "{name}" removed.',
   skillNotFound: 'Skill "{name}" not found.',
   skillListEmpty: 'No skills yet. Add one with: vexi skill add <file-or-url>',
+  replayExported: 'Replay exported: {path}',
+  replayNone: 'No recorded sessions yet — chat with Vexi first.',
+  explaining: 'Analyzing code…',
+  explainSavedFile: 'Explanation saved and opened in your browser: {path}',
 };
 
 const es: Strings = {
@@ -107,6 +115,10 @@ const es: Strings = {
   skillRemoved: 'Skill "{name}" eliminada.',
   skillNotFound: 'Skill "{name}" no encontrada.',
   skillListEmpty: 'Aún no hay skills. Añade una con: vexi skill add <archivo-o-url>',
+  replayExported: 'Replay exportado: {path}',
+  replayNone: 'Aún no hay sesiones grabadas — conversa con Vexi primero.',
+  explaining: 'Analizando el código…',
+  explainSavedFile: 'Explicación guardada y abierta en tu navegador: {path}',
 };
 
 const pt: Strings = {
@@ -139,6 +151,10 @@ const pt: Strings = {
   skillRemoved: 'Skill "{name}" removida.',
   skillNotFound: 'Skill "{name}" não encontrada.',
   skillListEmpty: 'Ainda não há skills. Adicione uma com: vexi skill add <arquivo-ou-url>',
+  replayExported: 'Replay exportado: {path}',
+  replayNone: 'Ainda não há sessões gravadas — converse com o Vexi primeiro.',
+  explaining: 'Analisando o código…',
+  explainSavedFile: 'Explicação salva e aberta no seu navegador: {path}',
 };
 
 const fr: Strings = {
@@ -171,6 +187,10 @@ const fr: Strings = {
   skillRemoved: 'Skill « {name} » supprimée.',
   skillNotFound: 'Skill « {name} » introuvable.',
   skillListEmpty: 'Aucune skill pour l\'instant. Ajoutez-en une avec : vexi skill add <fichier-ou-url>',
+  replayExported: 'Replay exporté : {path}',
+  replayNone: 'Aucune session enregistrée — discutez d\'abord avec Vexi.',
+  explaining: 'Analyse du code…',
+  explainSavedFile: 'Explication enregistrée et ouverte dans votre navigateur : {path}',
 };
 
 const STRINGS: Record<Lang, Strings> = {
