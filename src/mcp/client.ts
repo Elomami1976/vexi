@@ -42,7 +42,7 @@ export class McpManager {
           env: { ...(process.env as Record<string, string>), ...server.env },
           stderr: 'ignore',
         });
-        const client = new Client({ name: 'vexi', version: '0.4.0' });
+        const client = new Client({ name: 'vexi', version: '0.5.0' });
         await client.connect(transport);
 
         const { tools } = await client.listTools();

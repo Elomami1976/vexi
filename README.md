@@ -76,6 +76,8 @@ vexi explain src/ --es      # explain a folder in Spanish (in terminal)
 vexi graph --visual         # interactive dependency graph in your browser
 vexi mcp list               # manage external MCP servers
 vexi --mcp-server           # expose Vexi as an MCP server (stdio)
+vexi learn                  # learn your coding style from past sessions
+vexi learn --apply          # save it as a skill (injected in every session)
 ```
 
 Inside the chat:
@@ -205,6 +207,24 @@ official `@modelcontextprotocol/sdk`:
 Vexi **complements** Claude Code instead of competing: its project memory
 becomes a shared memory layer usable by any agent.
 
+## 🧠 Vexi Learn
+
+> The agent gets more *you* over time.
+
+```bash
+vexi learn           # analyze your recent sessions, preview the learned style
+vexi learn --apply   # save it as .vexi/skills/learned-style.md
+```
+
+Vexi mines your own recorded sessions for the strongest style signal there
+is: **your corrections to the AI** — “don't use classes”, “always use
+async/await”, “prefer named exports”, “لا تستخدم مكتبات خارجية” (signal
+detection works in all 5 languages). It distills them into a markdown skill
+file that is automatically injected into the system prompt of every future
+session, so you stop repeating yourself. Everything stays local — the only
+network call is to your own model provider, and you always preview before
+saving.
+
 ## Roadmap
 
 | Phase | Feature | Status |
@@ -213,7 +233,7 @@ becomes a shared memory layer usable by any agent.
 | 2 | AI Context Compression (running summary memory) · full project understanding · custom skills | ✅ done |
 | 3 | **Vexi Replay** (export sessions as animated HTML) · multilingual code explanation | ✅ done |
 | 4 | Visual code graph · MCP support (client **and** server mode) | ✅ done |
-| 5 | **Vexi Learn** — adapts to your personal coding style | 🔜 |
+| 5 | **Vexi Learn** — adapts to your personal coding style | ✅ done |
 
 ## Why Vexi?
 
@@ -225,6 +245,7 @@ becomes a shared memory layer usable by any agent.
 | Native-language code explanations | ✅ ar/es/pt/fr | ❌ | ❌ | ❌ |
 | Session replay export | ✅ | ❌ | ❌ | ❌ |
 | Persistent project memory | ✅ | partial | partial | ✅ |
+| Learns your personal coding style | ✅ from your own sessions | ❌ | ❌ | partial |
 | MCP server mode (be a tool for other agents) | ✅ | ❌ | ❌ | ❌ |
 | License | MIT | MIT | proprietary | proprietary |
 
@@ -254,6 +275,7 @@ src/
 ├── explain/        multilingual code explanation (RTL HTML for Arabic)
 ├── graph/          dependency graph + interactive d3 visualization
 ├── mcp/            MCP client (tools in chat) + server mode
+├── learn/          Vexi Learn — style mining from your own sessions
 ├── i18n/           5-language UI strings + RTL strategy
 ├── ui/             terminal branding (chalk, ora)
 └── utils/          atomic JSON writes, cross-platform open
@@ -270,7 +292,7 @@ To add support for a new key format, edit a single file: `src/providers/detect.t
 
 ## 🌍 العربية
 
-**Vexi** — وكيل برمجة بالذكاء الاصطناعي مفتوح المصدر يعمل في الطرفية. ثبّته بأمر واحد (`npm install -g vexi`)، الصق مفتاح API الخاص بك مرة واحدة، وابدأ فورًا. لا تسجيل، لا خادم، كل شيء يعمل محليًا على جهازك. في المرحلة الثالثة سيشرح Vexi أي كود بالعربية الفصحى في ملفات HTML تدعم الاتجاه من اليمين لليسار بشكل مثالي.
+**Vexi** — وكيل برمجة بالذكاء الاصطناعي مفتوح المصدر يعمل في الطرفية. ثبّته بأمر واحد (`npm install -g vexi`)، الصق مفتاح API الخاص بك مرة واحدة، وابدأ فورًا. لا تسجيل، لا خادم، كل شيء يعمل محليًا على جهازك. يشرح Vexi أي كود بالعربية الفصحى (`vexi explain auth.ts --ar`) في ملفات HTML تدعم الاتجاه من اليمين لليسار بشكل مثالي، ويتعلّم أسلوبك البرمجي الشخصي من جلساتك السابقة (`vexi learn`).
 
 ## 🌍 Español
 

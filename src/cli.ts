@@ -14,6 +14,7 @@
  *   vexi graph [--visual]      interactive dependency graph (d3 HTML)
  *   vexi mcp list/add/remove   manage external MCP servers (~/.vexi/mcp.json)
  *   vexi --mcp-server          expose Vexi as an MCP server (stdio)
+ *   vexi learn [--apply]       learn your coding style from past sessions
  */
 
 import { Command } from 'commander';
@@ -27,12 +28,13 @@ import { explain } from './explain/index.js';
 import { buildGraph } from './graph/index.js';
 import { exportGraphHtml } from './graph/html.js';
 import { loadMcpConfig, saveMcpConfig, MCP_CONFIG_PATH } from './mcp/config.js';
+import { learn, applyLearned, DEFAULT_MAX_SESSIONS } from './learn/index.js';
 import { createProvider, PROVIDER_INFO } from './providers/index.js';
 import { openInDefaultApp } from './utils/open.js';
 import { detectSystemLang, getStrings, normalizeLang, t, SUPPORTED_LANGS, type Lang } from './i18n/index.js';
 import { accent, dim, err, ok } from './ui/index.js';
 
-export const VERSION = '0.4.0';
+export const VERSION = '0.5.0';
 
 /** Resolve the active language: --lang flag > saved config > system locale. */
 async function resolveLang(flag?: string): Promise<Lang> {
@@ -292,6 +294,59 @@ export function buildCli(): Command {
       delete config.mcpServers[name];
       await saveMcpConfig(config);
       console.log(ok(t(s.mcpRemoved, { name })));
+    });
+
+  // ── Vexi Learn (Feature 7) ──────────────────────────────────────
+  program
+    .command('learn')
+    .description('Learn your personal coding style from past sessions and turn it into a skill')
+    .option('-a, --apply', 'save the result as .vexi/skills/learned-style.md')
+    .option('-n, --sessions <count>', 'number of recent sessions to analyze', String(DEFAULT_MAX_SESSIONS))
+    .option('-l, --lang <lang>', `UI language (${SUPPORTED_LANGS.join('/')})`)
+    .action(async (options: { apply?: boolean; sessions?: string; lang?: string }) => {
+      const lang = await resolveLang(options.lang);
+      const s = getStrings(lang);
+
+      const cfg = await loadConfig();
+      if (!cfg) {
+        console.error(err('No API key configured — run `vexi` once to set up.'));
+        process.exitCode = 1;
+        return;
+      }
+      const provider = createProvider(cfg.provider, cfg.apiKey, cfg.model);
+      const maxSessions = Math.max(1, parseInt(options.sessions ?? '', 10) || DEFAULT_MAX_SESSIONS);
+
+      const spinner = ora({ text: dim(s.learnAnalyzing), spinner: 'dots' }).start();
+      try {
+        const result = await learn(provider, process.cwd(), maxSessions);
+        spinner.stop();
+
+        if (result.evidence.sessionsAnalyzed === 0) {
+          console.log(dim(s.learnNoSessions));
+          return;
+        }
+        if (!result.markdown) {
+          console.log(dim(s.learnNothing));
+          return;
+        }
+
+        console.log(ok(t(s.learnPreview, {
+          sessions: String(result.evidence.sessionsAnalyzed),
+          signals: String(result.evidence.signals.length),
+        })));
+        console.log('\n' + result.markdown + '\n');
+
+        if (options.apply) {
+          const path = await applyLearned(process.cwd(), result.markdown);
+          console.log(ok(t(s.learnApplied, { path })));
+        } else {
+          console.log(dim(s.learnApplyHint));
+        }
+      } catch (e) {
+        spinner.stop();
+        console.error(err(e instanceof Error ? e.message : String(e)));
+        process.exitCode = 1;
+      }
     });
 
   return program;

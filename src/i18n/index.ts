@@ -57,6 +57,12 @@ export interface Strings {
   mcpAdded: string; // {name}
   mcpRemoved: string; // {name}
   mcpNotFound: string; // {name}
+  learnAnalyzing: string;
+  learnNoSessions: string;
+  learnNothing: string;
+  learnPreview: string; // {sessions} {signals}
+  learnApplyHint: string;
+  learnApplied: string; // {path}
 }
 
 const en: Strings = {
@@ -103,6 +109,12 @@ const en: Strings = {
   mcpAdded: 'MCP server "{name}" added.',
   mcpRemoved: 'MCP server "{name}" removed.',
   mcpNotFound: 'MCP server "{name}" not found.',
+  learnAnalyzing: 'Learning your coding style from past sessions…',
+  learnNoSessions: 'No recorded sessions yet — chat with Vexi first, then run `vexi learn`.',
+  learnNothing: 'Not enough signal yet — keep coding with Vexi and try again later.',
+  learnPreview: 'Learned from {sessions} sessions ({signals} corrections found):',
+  learnApplyHint: 'Looks right? Save it with: vexi learn --apply',
+  learnApplied: 'Learned style saved: {path} — now injected into every session.',
 };
 
 const es: Strings = {
@@ -149,6 +161,12 @@ const es: Strings = {
   mcpAdded: 'Servidor MCP "{name}" añadido.',
   mcpRemoved: 'Servidor MCP "{name}" eliminado.',
   mcpNotFound: 'Servidor MCP "{name}" no encontrado.',
+  learnAnalyzing: 'Aprendiendo tu estilo de programación de sesiones pasadas…',
+  learnNoSessions: 'Aún no hay sesiones grabadas — conversa con Vexi primero y luego ejecuta `vexi learn`.',
+  learnNothing: 'Aún no hay suficiente señal — sigue programando con Vexi e inténtalo más tarde.',
+  learnPreview: 'Aprendido de {sessions} sesiones ({signals} correcciones encontradas):',
+  learnApplyHint: '¿Se ve bien? Guárdalo con: vexi learn --apply',
+  learnApplied: 'Estilo aprendido guardado: {path} — ahora se inyecta en cada sesión.',
 };
 
 const pt: Strings = {
@@ -195,6 +213,12 @@ const pt: Strings = {
   mcpAdded: 'Servidor MCP "{name}" adicionado.',
   mcpRemoved: 'Servidor MCP "{name}" removido.',
   mcpNotFound: 'Servidor MCP "{name}" não encontrado.',
+  learnAnalyzing: 'Aprendendo seu estilo de programação com sessões passadas…',
+  learnNoSessions: 'Ainda não há sessões gravadas — converse com o Vexi primeiro e depois execute `vexi learn`.',
+  learnNothing: 'Ainda não há sinal suficiente — continue programando com o Vexi e tente mais tarde.',
+  learnPreview: 'Aprendido de {sessions} sessões ({signals} correções encontradas):',
+  learnApplyHint: 'Parece certo? Salve com: vexi learn --apply',
+  learnApplied: 'Estilo aprendido salvo: {path} — agora é injetado em cada sessão.',
 };
 
 const fr: Strings = {
@@ -241,6 +265,12 @@ const fr: Strings = {
   mcpAdded: 'Serveur MCP « {name} » ajouté.',
   mcpRemoved: 'Serveur MCP « {name} » supprimé.',
   mcpNotFound: 'Serveur MCP « {name} » introuvable.',
+  learnAnalyzing: 'Apprentissage de votre style de code à partir des sessions passées…',
+  learnNoSessions: 'Aucune session enregistrée — discutez d\'abord avec Vexi, puis lancez `vexi learn`.',
+  learnNothing: 'Pas encore assez de signal — continuez à coder avec Vexi et réessayez plus tard.',
+  learnPreview: 'Appris de {sessions} sessions ({signals} corrections trouvées) :',
+  learnApplyHint: 'Ça vous convient ? Enregistrez avec : vexi learn --apply',
+  learnApplied: 'Style appris enregistré : {path} — désormais injecté dans chaque session.',
 };
 
 const STRINGS: Record<Lang, Strings> = {

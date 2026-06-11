@@ -35,7 +35,7 @@ import { SUPPORTED_LANGS, type Lang } from '../i18n/index.js';
 
 export async function runMcpServer(): Promise<void> {
   const root = process.cwd();
-  const server = new McpServer({ name: 'vexi', version: '0.4.0' });
+  const server = new McpServer({ name: 'vexi', version: '0.5.0' });
 
   // ── Resources ──────────────────────────────────────────────────────────
   server.registerResource(
