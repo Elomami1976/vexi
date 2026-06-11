@@ -8,6 +8,11 @@
  *   summary in .vexi/memory.json instead of being deleted.
  * - Custom Skills: .vexi/skills/*.md conventions are injected into the
  *   system prompt.
+ *
+ * Phase 4 additions:
+ * - MCP client: tools from servers configured in ~/.vexi/mcp.json are
+ *   offered to the model (text-based tool calls, provider-agnostic) and
+ *   executed over stdio.
  */
 
 import { basename } from 'node:path';
@@ -38,6 +43,8 @@ import {
 } from './memory/index.js';
 import { loadSkills, skillsBlock } from './skills/index.js';
 import { SessionRecorder } from './replay/recorder.js';
+import { McpManager, parseToolCall } from './mcp/client.js';
+import { loadMcpConfig } from './mcp/config.js';
 import { ARABIC_RTL_NOTE, getStrings, t, type Lang, type Strings } from './i18n/index.js';
 import { accent, dim, err, ok, printBanner, printStatusLine, userPrompt, vexiLabel, warn } from './ui/index.js';
 
@@ -80,6 +87,19 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
   let memory: ProjectMemory = await loadMemory(root);
   const skills = await loadSkills(root);
 
+  // ── MCP client: connect configured external tool servers ────────────
+  const mcp = new McpManager();
+  const mcpConfig = await loadMcpConfig();
+  if (Object.keys(mcpConfig.mcpServers).length > 0) {
+    const mcpSpinner = ora({ text: dim(s.mcpConnecting), spinner: 'dots' }).start();
+    const { connected, failed } = await mcp.connect();
+    mcpSpinner.stop();
+    if (connected.length > 0) {
+      console.log(dim(t(s.mcpConnected, { servers: connected.join(', '), tools: String(mcp.tools.length) })));
+    }
+    for (const f of failed) console.log(warn(t(s.mcpFailed, { name: f.name })));
+  }
+
   // ── Session recording (Vexi Replay) — saved after every turn ─────────
   const recorder = new SessionRecorder(root, {
     project: basename(root),
@@ -117,7 +137,7 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
    */
   const buildSystem = (): ChatMessage => ({
     role: 'system',
-    content: buildSystemPrompt(opts.lang, projectBlock, skillsText, memoryBlock(memory)),
+    content: buildSystemPrompt(opts.lang, projectBlock, skillsText, memoryBlock(memory), mcp.promptBlock()),
   });
 
   /**
@@ -160,6 +180,7 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
         case '/exit':
         case '/quit':
           console.log(ok(s.goodbye));
+          await mcp.close();
           return;
         case '/help':
           console.log(dim(s.helpText) + '\n');
@@ -196,7 +217,7 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
       }
     }
 
-    // ── Send to the AI ──
+    // ── Send to the AI (with MCP tool-call loop) ──
     history.push({ role: 'user', content: text });
     recorder.add('user', text);
 
@@ -204,18 +225,43 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
     let started = false;
 
     try {
-      const reply = await provider.stream([buildSystem(), ...history], (chunk) => {
-        if (!started) {
-          spinner.stop();
-          process.stdout.write(vexiLabel + ' ');
-          started = true;
+      // Up to 5 tool-call rounds per user turn, then a final plain answer.
+      for (let round = 0; round < 6; round++) {
+        const reply = await provider.stream([buildSystem(), ...history], (chunk) => {
+          if (!started) {
+            spinner.stop();
+            process.stdout.write(vexiLabel + ' ');
+            started = true;
+          }
+          process.stdout.write(chunk);
+        });
+        if (!started) spinner.stop(); // empty reply edge case
+        process.stdout.write('\n\n');
+        history.push({ role: 'assistant', content: reply });
+        recorder.add('assistant', reply);
+
+        // MCP tool call requested by the model?
+        const call = mcp.tools.length > 0 && round < 5 ? parseToolCall(reply) : null;
+        if (!call) break;
+
+        const toolSpinner = ora({
+          text: dim(t(s.mcpRunningTool, { tool: `${call.server}/${call.tool}` })),
+          spinner: 'dots',
+        }).start();
+        let result: string;
+        try {
+          result = await mcp.callTool(call.server, call.tool, call.arguments);
+        } catch (e) {
+          result = `TOOL ERROR: ${e instanceof Error ? e.message : String(e)}`;
         }
-        process.stdout.write(chunk);
-      });
-      if (!started) spinner.stop(); // empty reply edge case
-      process.stdout.write('\n\n');
-      history.push({ role: 'assistant', content: reply });
-      recorder.add('assistant', reply);
+        toolSpinner.stop();
+
+        const toolMessage = `TOOL RESULT (${call.server}/${call.tool}):\n${result.slice(0, 8000)}`;
+        history.push({ role: 'user', content: toolMessage });
+        recorder.add('user', toolMessage);
+        started = false; // next round streams with a fresh label
+      }
+
       void recorder.save(); // fire-and-forget, atomic
       maybeCompress();
     } catch (e) {
@@ -282,6 +328,7 @@ function buildSystemPrompt(
   projectBlock: string,
   skillsText: string,
   memoryText: string,
+  mcpText: string,
 ): string {
   const langNames: Record<Lang, string> = {
     en: 'English',
@@ -300,5 +347,6 @@ function buildSystemPrompt(
   if (projectBlock) parts.push('', '## Project map', projectBlock);
   if (memoryText) parts.push('', memoryText);
   if (skillsText) parts.push('', skillsText);
+  if (mcpText) parts.push('', mcpText);
   return parts.join('\n');
 }

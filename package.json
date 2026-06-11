@@ -1,6 +1,6 @@
 {
   "name": "vexi",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Open-source AI coding agent for your terminal. Bring your own key, zero config, multilingual.",
   "type": "module",
   "bin": {
@@ -47,9 +47,11 @@
   "homepage": "https://github.com/Elomami1976/vexi#readme",
   "dependencies": {
     "@inquirer/prompts": "^7.2.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "chalk": "^5.4.0",
     "commander": "^13.0.0",
-    "ora": "^8.1.1"
+    "ora": "^8.1.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

@@ -11,6 +11,9 @@
  *   vexi replay                list recorded sessions
  *   vexi replay --export       export latest session as standalone HTML
  *   vexi explain <path> --ar   explain a file/folder in your language
+ *   vexi graph [--visual]      interactive dependency graph (d3 HTML)
+ *   vexi mcp list/add/remove   manage external MCP servers (~/.vexi/mcp.json)
+ *   vexi --mcp-server          expose Vexi as an MCP server (stdio)
  */
 
 import { Command } from 'commander';
@@ -21,12 +24,15 @@ import { loadSkills, addSkill, removeSkill } from './skills/index.js';
 import { listSessions } from './replay/recorder.js';
 import { exportReplay } from './replay/export.js';
 import { explain } from './explain/index.js';
+import { buildGraph } from './graph/index.js';
+import { exportGraphHtml } from './graph/html.js';
+import { loadMcpConfig, saveMcpConfig, MCP_CONFIG_PATH } from './mcp/config.js';
 import { createProvider, PROVIDER_INFO } from './providers/index.js';
 import { openInDefaultApp } from './utils/open.js';
 import { detectSystemLang, getStrings, normalizeLang, t, SUPPORTED_LANGS, type Lang } from './i18n/index.js';
 import { accent, dim, err, ok } from './ui/index.js';
 
-export const VERSION = '0.3.0';
+export const VERSION = '0.4.0';
 
 /** Resolve the active language: --lang flag > saved config > system locale. */
 async function resolveLang(flag?: string): Promise<Lang> {
@@ -50,7 +56,14 @@ export function buildCli(): Command {
     .description('Open-source AI coding agent for your terminal. BYOK, zero config, multilingual.')
     .version(VERSION, '-v, --version')
     .option('-l, --lang <lang>', `UI language (${SUPPORTED_LANGS.join('/')})`)
-    .action(async (options: { lang?: string }) => {
+    .option('--mcp-server', 'run Vexi as an MCP server over stdio (for Claude Desktop, Cursor, etc.)')
+    .action(async (options: { lang?: string; mcpServer?: boolean }) => {
+      if (options.mcpServer) {
+        // stdout becomes the JSON-RPC channel — no banner, no prompts.
+        const { runMcpServer } = await import('./mcp/server.js');
+        await runMcpServer();
+        return;
+      }
       const lang = await resolveLang(options.lang);
       await runAgent({ lang, version: VERSION });
     });
@@ -207,6 +220,78 @@ export function buildCli(): Command {
         console.error(err(e instanceof Error ? e.message : String(e)));
         process.exitCode = 1;
       }
+    });
+
+  // ── Visual code graph (Feature 5) ─────────────────────────────────────
+  program
+    .command('graph')
+    .description('Generate an interactive dependency graph (single HTML, opens in browser)')
+    .option('--visual', 'open the graph in the browser (default behavior)')
+    .option('-o, --out <file>', 'output HTML path')
+    .option('-l, --lang <lang>', `page language (${SUPPORTED_LANGS.join('/')})`)
+    .action(async (options: { visual?: boolean; out?: string; lang?: string }) => {
+      const lang = await resolveLang(options.lang);
+      const s = getStrings(lang);
+      const spinner = ora({ text: dim(s.graphBuilding), spinner: 'dots' }).start();
+      try {
+        const graph = await buildGraph(process.cwd());
+        const path = await exportGraphHtml(process.cwd(), graph, lang, options.out);
+        spinner.stop();
+        console.log(ok(t(s.graphExported, { path })));
+        console.log(dim(`${graph.nodes.length} modules · ${graph.edges.length} imports`));
+        openInDefaultApp(path);
+      } catch (e) {
+        spinner.stop();
+        console.error(err(e instanceof Error ? e.message : String(e)));
+        process.exitCode = 1;
+      }
+    });
+
+  // ── MCP client config (Feature 6a) ───────────────────────────────────
+  const mcp = program.command('mcp').description('Manage external MCP servers (~/.vexi/mcp.json)');
+
+  mcp
+    .command('list', { isDefault: true })
+    .description('Show configured MCP servers')
+    .action(async () => {
+      const s = getStrings(await resolveLang());
+      const config = await loadMcpConfig();
+      const entries = Object.entries(config.mcpServers);
+      console.log(dim('config: ') + accent(MCP_CONFIG_PATH));
+      if (entries.length === 0) {
+        console.log(dim(s.mcpListEmpty));
+        return;
+      }
+      for (const [name, server] of entries) {
+        console.log(accent(name) + dim(` — ${server.command} ${(server.args ?? []).join(' ')}`));
+      }
+    });
+
+  mcp
+    .command('add <name> <command> [args...]')
+    .description('Add an MCP server (e.g. vexi mcp add github npx -y @modelcontextprotocol/server-github)')
+    .action(async (name: string, command: string, args: string[]) => {
+      const s = getStrings(await resolveLang());
+      const config = await loadMcpConfig();
+      config.mcpServers[name] = { command, ...(args.length ? { args } : {}) };
+      await saveMcpConfig(config);
+      console.log(ok(t(s.mcpAdded, { name })));
+    });
+
+  mcp
+    .command('remove <name>')
+    .description('Remove an MCP server')
+    .action(async (name: string) => {
+      const s = getStrings(await resolveLang());
+      const config = await loadMcpConfig();
+      if (!config.mcpServers[name]) {
+        console.error(err(t(s.mcpNotFound, { name })));
+        process.exitCode = 1;
+        return;
+      }
+      delete config.mcpServers[name];
+      await saveMcpConfig(config);
+      console.log(ok(t(s.mcpRemoved, { name })));
     });
 
   return program;

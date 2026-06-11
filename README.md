@@ -73,6 +73,9 @@ vexi replay           # list recorded sessions
 vexi replay --export  # export a session as an animated HTML replay
 vexi explain auth.ts --ar   # explain a file in Arabic (opens RTL HTML)
 vexi explain src/ --es      # explain a folder in Spanish (in terminal)
+vexi graph --visual         # interactive dependency graph in your browser
+vexi mcp list               # manage external MCP servers
+vexi --mcp-server           # expose Vexi as an MCP server (stdio)
 ```
 
 Inside the chat:
@@ -158,6 +161,50 @@ numbers → how the pieces fit together. Latin-script languages stream
 directly in the terminal; Arabic is written to `.md` + `.html` (dir="rtl")
 and opened in your browser, where it renders perfectly.
 
+## 🗺️ Visual code graph
+
+```bash
+vexi graph --visual
+```
+
+Generates a **single HTML file** (no server) and opens it in your browser:
+an interactive d3 force-directed graph of your modules with zoom, drag and
+search. Node heat shows how many files depend on each module, and clicking
+a node runs **impact analysis** — highlighting every file that breaks if
+you change it.
+
+## 🔌 MCP support
+
+**Vexi as MCP client** — connect external tools and the AI can call them
+mid-conversation (works with every provider, no function-calling API needed):
+
+```bash
+vexi mcp add github npx -y @modelcontextprotocol/server-github
+vexi mcp list
+```
+
+Configuration lives in `~/.vexi/mcp.json` (same shape as Claude Desktop's
+config, copy entries verbatim).
+
+**Vexi as MCP server** — the unique part: Vexi exposes its own capabilities
+to *other* AI agents (Claude Desktop, Claude Code, Cursor…), built with the
+official `@modelcontextprotocol/sdk`:
+
+| Capability | Type |
+| --- | --- |
+| `vexi://project` — project structure map | Resource |
+| `vexi://memory` — decisions & summary from past sessions | Resource |
+| `vexi://sessions` — recorded session list | Resource |
+| `scan_project` / `project_memory` / `explain_code` (5 languages) | Tools |
+
+```jsonc
+// Claude Desktop config
+{ "mcpServers": { "vexi": { "command": "vexi", "args": ["--mcp-server"] } } }
+```
+
+Vexi **complements** Claude Code instead of competing: its project memory
+becomes a shared memory layer usable by any agent.
+
 ## Roadmap
 
 | Phase | Feature | Status |
@@ -165,7 +212,7 @@ and opened in your browser, where it renders perfectly.
 | 1 | BYOK · easy install · terminal chat | ✅ done |
 | 2 | AI Context Compression (running summary memory) · full project understanding · custom skills | ✅ done |
 | 3 | **Vexi Replay** (export sessions as animated HTML) · multilingual code explanation | ✅ done |
-| 4 | Visual code graph · MCP support (client **and** server mode) | 🔜 |
+| 4 | Visual code graph · MCP support (client **and** server mode) | ✅ done |
 | 5 | **Vexi Learn** — adapts to your personal coding style | 🔜 |
 
 ## Why Vexi?
@@ -178,7 +225,7 @@ and opened in your browser, where it renders perfectly.
 | Native-language code explanations | ✅ ar/es/pt/fr | ❌ | ❌ | ❌ |
 | Session replay export | ✅ | ❌ | ❌ | ❌ |
 | Persistent project memory | ✅ | partial | partial | ✅ |
-| MCP server mode (be a tool for other agents) | ✅ (Phase 4) | ❌ | ❌ | ❌ |
+| MCP server mode (be a tool for other agents) | ✅ | ❌ | ❌ | ❌ |
 | License | MIT | MIT | proprietary | proprietary |
 
 Vexi **complements** tools like Claude Code instead of competing: its project memory and multilingual explanations will be exposed over MCP so any agent can use them.
@@ -205,6 +252,8 @@ src/
 ├── skills/         custom skills loader (.vexi/skills/*.md)
 ├── replay/         session recorder + HTML replay export
 ├── explain/        multilingual code explanation (RTL HTML for Arabic)
+├── graph/          dependency graph + interactive d3 visualization
+├── mcp/            MCP client (tools in chat) + server mode
 ├── i18n/           5-language UI strings + RTL strategy
 ├── ui/             terminal branding (chalk, ora)
 └── utils/          atomic JSON writes, cross-platform open

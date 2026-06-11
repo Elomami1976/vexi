@@ -47,6 +47,16 @@ export interface Strings {
   replayNone: string;
   explaining: string;
   explainSavedFile: string; // {path}
+  graphBuilding: string;
+  graphExported: string; // {path}
+  mcpConnecting: string;
+  mcpConnected: string; // {servers} {tools}
+  mcpFailed: string; // {name}
+  mcpRunningTool: string; // {tool}
+  mcpListEmpty: string;
+  mcpAdded: string; // {name}
+  mcpRemoved: string; // {name}
+  mcpNotFound: string; // {name}
 }
 
 const en: Strings = {
@@ -83,6 +93,16 @@ const en: Strings = {
   replayNone: 'No recorded sessions yet — chat with Vexi first.',
   explaining: 'Analyzing code…',
   explainSavedFile: 'Explanation saved and opened in your browser: {path}',
+  graphBuilding: 'Building dependency graph…',
+  graphExported: 'Graph exported and opened in your browser: {path}',
+  mcpConnecting: 'Connecting MCP servers…',
+  mcpConnected: 'MCP connected: {servers} ({tools} tools)',
+  mcpFailed: 'MCP server "{name}" failed to connect.',
+  mcpRunningTool: 'Running tool {tool}…',
+  mcpListEmpty: 'No MCP servers configured. Add one with: vexi mcp add <name> <command> [args...]',
+  mcpAdded: 'MCP server "{name}" added.',
+  mcpRemoved: 'MCP server "{name}" removed.',
+  mcpNotFound: 'MCP server "{name}" not found.',
 };
 
 const es: Strings = {
@@ -119,6 +139,16 @@ const es: Strings = {
   replayNone: 'Aún no hay sesiones grabadas — conversa con Vexi primero.',
   explaining: 'Analizando el código…',
   explainSavedFile: 'Explicación guardada y abierta en tu navegador: {path}',
+  graphBuilding: 'Construyendo el grafo de dependencias…',
+  graphExported: 'Grafo exportado y abierto en tu navegador: {path}',
+  mcpConnecting: 'Conectando servidores MCP…',
+  mcpConnected: 'MCP conectado: {servers} ({tools} herramientas)',
+  mcpFailed: 'El servidor MCP "{name}" no pudo conectarse.',
+  mcpRunningTool: 'Ejecutando herramienta {tool}…',
+  mcpListEmpty: 'No hay servidores MCP configurados. Añade uno con: vexi mcp add <nombre> <comando> [args...]',
+  mcpAdded: 'Servidor MCP "{name}" añadido.',
+  mcpRemoved: 'Servidor MCP "{name}" eliminado.',
+  mcpNotFound: 'Servidor MCP "{name}" no encontrado.',
 };
 
 const pt: Strings = {
@@ -155,6 +185,16 @@ const pt: Strings = {
   replayNone: 'Ainda não há sessões gravadas — converse com o Vexi primeiro.',
   explaining: 'Analisando o código…',
   explainSavedFile: 'Explicação salva e aberta no seu navegador: {path}',
+  graphBuilding: 'Construindo o grafo de dependências…',
+  graphExported: 'Grafo exportado e aberto no seu navegador: {path}',
+  mcpConnecting: 'Conectando servidores MCP…',
+  mcpConnected: 'MCP conectado: {servers} ({tools} ferramentas)',
+  mcpFailed: 'O servidor MCP "{name}" não conseguiu conectar.',
+  mcpRunningTool: 'Executando ferramenta {tool}…',
+  mcpListEmpty: 'Nenhum servidor MCP configurado. Adicione um com: vexi mcp add <nome> <comando> [args...]',
+  mcpAdded: 'Servidor MCP "{name}" adicionado.',
+  mcpRemoved: 'Servidor MCP "{name}" removido.',
+  mcpNotFound: 'Servidor MCP "{name}" não encontrado.',
 };
 
 const fr: Strings = {
@@ -191,6 +231,16 @@ const fr: Strings = {
   replayNone: 'Aucune session enregistrée — discutez d\'abord avec Vexi.',
   explaining: 'Analyse du code…',
   explainSavedFile: 'Explication enregistrée et ouverte dans votre navigateur : {path}',
+  graphBuilding: 'Construction du graphe de dépendances…',
+  graphExported: 'Graphe exporté et ouvert dans votre navigateur : {path}',
+  mcpConnecting: 'Connexion aux serveurs MCP…',
+  mcpConnected: 'MCP connecté : {servers} ({tools} outils)',
+  mcpFailed: 'Le serveur MCP « {name} » n\'a pas pu se connecter.',
+  mcpRunningTool: 'Exécution de l\'outil {tool}…',
+  mcpListEmpty: 'Aucun serveur MCP configuré. Ajoutez-en un avec : vexi mcp add <nom> <commande> [args...]',
+  mcpAdded: 'Serveur MCP « {name} » ajouté.',
+  mcpRemoved: 'Serveur MCP « {name} » supprimé.',
+  mcpNotFound: 'Serveur MCP « {name} » introuvable.',
 };
 
 const STRINGS: Record<Lang, Strings> = {
