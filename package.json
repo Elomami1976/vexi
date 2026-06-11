@@ -1,0 +1,58 @@
+{
+  "name": "vexi",
+  "version": "0.1.0",
+  "description": "Open-source AI coding agent for your terminal. Bring your own key, zero config, multilingual.",
+  "type": "module",
+  "bin": {
+    "vexi": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "ai",
+    "cli",
+    "coding-agent",
+    "terminal",
+    "assistant",
+    "byok",
+    "anthropic",
+    "openai",
+    "gemini",
+    "groq",
+    "openrouter",
+    "multilingual"
+  ],
+  "author": "Elomami1976",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Elomami1976/vexi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Elomami1976/vexi/issues"
+  },
+  "homepage": "https://github.com/Elomami1976/vexi#readme",
+  "dependencies": {
+    "@inquirer/prompts": "^7.2.0",
+    "chalk": "^5.4.0",
+    "commander": "^13.0.0",
+    "ora": "^8.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0"
+  }
+}
