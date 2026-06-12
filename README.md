@@ -12,7 +12,7 @@
 **Open-source AI coding agent for your terminal.**
 Bring your own key · Zero config · Multilingual · 100% local
 
-[![npm](https://img.shields.io/npm/v/vexi?color=2979FF)](https://www.npmjs.com/package/vexi)
+[![npm](https://img.shields.io/npm/v/vexi-cli?color=2979FF)](https://www.npmjs.com/package/vexi-cli)
 [![license](https://img.shields.io/badge/license-MIT-2979FF)](LICENSE)
 [![node](https://img.shields.io/badge/node-%E2%89%A518-2979FF)](package.json)
 
@@ -25,7 +25,7 @@ Bring your own key · Zero config · Multilingual · 100% local
 ## Install
 
 ```bash
-npm install -g vexi
+npm install -g vexi-cli
 vexi
 ```
 
@@ -239,7 +239,7 @@ saving.
 
 | | Vexi | OpenCode | Claude Code | Cursor |
 | --- | --- | --- | --- | --- |
-| Install | `npm i -g vexi` | binary/script | `npm i -g` | desktop app |
+| Install | `npm i -g vexi-cli` | binary/script | `npm i -g` | desktop app |
 | BYOK (any provider) | ✅ 5 providers, auto-detect | ✅ | ❌ Anthropic only | partial |
 | Works fully offline/local | ✅ no server, no account | ✅ | ❌ account | ❌ account |
 | Native-language code explanations | ✅ ar/es/pt/fr | ❌ | ❌ | ❌ |
@@ -292,19 +292,19 @@ To add support for a new key format, edit a single file: `src/providers/detect.t
 
 ## 🌍 العربية
 
-**Vexi** — وكيل برمجة بالذكاء الاصطناعي مفتوح المصدر يعمل في الطرفية. ثبّته بأمر واحد (`npm install -g vexi`)، الصق مفتاح API الخاص بك مرة واحدة، وابدأ فورًا. لا تسجيل، لا خادم، كل شيء يعمل محليًا على جهازك. يشرح Vexi أي كود بالعربية الفصحى (`vexi explain auth.ts --ar`) في ملفات HTML تدعم الاتجاه من اليمين لليسار بشكل مثالي، ويتعلّم أسلوبك البرمجي الشخصي من جلساتك السابقة (`vexi learn`).
+**Vexi** — وكيل برمجة بالذكاء الاصطناعي مفتوح المصدر يعمل في الطرفية. ثبّته بأمر واحد (`npm install -g vexi-cli`)، الصق مفتاح API الخاص بك مرة واحدة، وابدأ فورًا. لا تسجيل، لا خادم، كل شيء يعمل محليًا على جهازك. يشرح Vexi أي كود بالعربية الفصحى (`vexi explain auth.ts --ar`) في ملفات HTML تدعم الاتجاه من اليمين لليسار بشكل مثالي، ويتعلّم أسلوبك البرمجي الشخصي من جلساتك السابقة (`vexi learn`).
 
 ## 🌍 Español
 
-**Vexi** es un agente de programación con IA, de código abierto, que vive en tu terminal. Instálalo con un solo comando (`npm install -g vexi`), pega tu clave API una vez y empieza al instante. Sin registro, sin servidor: todo se ejecuta localmente. Vexi detecta tu proveedor automáticamente y habla tu idioma.
+**Vexi** es un agente de programación con IA, de código abierto, que vive en tu terminal. Instálalo con un solo comando (`npm install -g vexi-cli`), pega tu clave API una vez y empieza al instante. Sin registro, sin servidor: todo se ejecuta localmente. Vexi detecta tu proveedor automáticamente y habla tu idioma.
 
 ## 🌍 Português
 
-**Vexi** é um agente de programação com IA, de código aberto, que vive no seu terminal. Instale com um único comando (`npm install -g vexi`), cole sua chave de API uma vez e comece imediatamente. Sem cadastro, sem servidor: tudo roda localmente. O Vexi detecta seu provedor automaticamente e fala o seu idioma.
+**Vexi** é um agente de programação com IA, de código aberto, que vive no seu terminal. Instale com um único comando (`npm install -g vexi-cli`), cole sua chave de API uma vez e comece imediatamente. Sem cadastro, sem servidor: tudo roda localmente. O Vexi detecta seu provedor automaticamente e fala o seu idioma.
 
 ## 🌍 Français
 
-**Vexi** est un agent de codage IA open source qui vit dans votre terminal. Installez-le en une seule commande (`npm install -g vexi`), collez votre clé API une fois et commencez immédiatement. Pas de compte, pas de serveur : tout s'exécute localement. Vexi détecte automatiquement votre fournisseur et parle votre langue.
+**Vexi** est un agent de codage IA open source qui vit dans votre terminal. Installez-le en une seule commande (`npm install -g vexi-cli`), collez votre clé API une fois et commencez immédiatement. Pas de compte, pas de serveur : tout s'exécute localement. Vexi détecte automatiquement votre fournisseur et parle votre langue.
 
 ---
 
@@ -312,6 +312,6 @@ To add support for a new key format, edit a single file: `src/providers/detect.t
 
 **MIT License** · Made with ⚡ by the Vexi community
 
-`npm install -g vexi`
+`npm install -g vexi-cli`
 
 </div>
