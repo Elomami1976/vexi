@@ -90,6 +90,22 @@ Inside the chat:
 /exit    quit
 ```
 
+## ⚙️ Multi-language build support
+
+Vexi can build and run projects in **any language** — not just JavaScript. When the AI suggests commands, it wraps them in a shell block, Vexi asks for confirmation, then executes them automatically and feeds the output back to the AI.
+
+| Language | Commands Vexi can run |
+| --- | --- |
+| Python | `pip install -r requirements.txt`, `python main.py`, `pytest` |
+| Java (Maven) | `mvn compile`, `mvn package`, `java -jar target/app.jar` |
+| Java (Gradle) | `gradle build`, `java -jar build/libs/app.jar` |
+| C / C++ | `gcc main.c -o main`, `make`, `cmake ..` |
+| Rust | `cargo build`, `cargo run` |
+| Go | `go build ./...`, `go run main.go` |
+| JavaScript | `npm install`, `npm run build`, `npm test` |
+
+The project scanner automatically detects `.py`, `.java`, `.c`, `.cpp`, `.rs`, `.go` files and tells the AI what language your project uses before the first message.
+
 ## 🧠 Project memory — Context Compression Engine
 
 Most AI coding tools forget earlier decisions once the conversation gets long.
