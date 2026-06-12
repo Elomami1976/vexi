@@ -34,7 +34,7 @@ import { openInDefaultApp } from './utils/open.js';
 import { detectSystemLang, getStrings, normalizeLang, t, SUPPORTED_LANGS, type Lang } from './i18n/index.js';
 import { accent, dim, err, ok } from './ui/index.js';
 
-export const VERSION = '0.5.0';
+export const VERSION = '0.5.2';
 
 /** Resolve the active language: --lang flag > saved config > system locale. */
 async function resolveLang(flag?: string): Promise<Lang> {

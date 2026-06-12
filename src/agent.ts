@@ -56,20 +56,31 @@ interface AgentOptions {
 
 /**
  * Read a user message with multi-line paste support.
- * Lines pasted together arrive within milliseconds of each other;
- * a 30 ms debounce collects them all before resolving.
+ * Creates a fresh readline interface per call so it never conflicts
+ * with inquirer's internal readline. Lines pasted together arrive
+ * within ms of each other; a 30 ms debounce collects them all.
  */
-function readMessage(rl: nodeRl.Interface, prompt: string): Promise<string> {
+function readMessage(prompt: string): Promise<string> {
   return new Promise((resolve, reject) => {
+    // Inquirer may have paused stdin — resume before creating our interface.
+    process.stdin.resume();
+
     const lines: string[] = [];
     let settled = false;
     let timer: ReturnType<typeof setTimeout> | null = null;
 
+    const iface = nodeRl.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+      terminal: true,
+    });
+
     const finish = () => {
       if (settled) return;
       settled = true;
-      rl.removeListener('line', onLine);
-      rl.removeListener('close', onClose);
+      iface.removeListener('line', onLine);
+      iface.removeListener('close', onClose);
+      iface.close();
       resolve(lines.join('\n'));
     };
 
@@ -82,13 +93,19 @@ function readMessage(rl: nodeRl.Interface, prompt: string): Promise<string> {
     const onClose = () => {
       if (!settled) {
         settled = true;
-        rl.removeListener('line', onLine);
+        iface.removeListener('line', onLine);
         reject(Object.assign(new Error('stdin closed'), { name: 'ExitPromptError' }));
       }
     };
 
-    rl.on('line', onLine);
-    rl.once('close', onClose);
+    iface.on('SIGINT', () => {
+      settled = true;
+      iface.close();
+      reject(Object.assign(new Error('ExitPromptError'), { name: 'ExitPromptError' }));
+    });
+
+    iface.on('line', onLine);
+    iface.once('close', onClose);
     process.stdout.write(prompt + ' ');
   });
 }
@@ -114,11 +131,6 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
 
   let provider = createProvider(config.provider, config.apiKey, config.model);
   const root = process.cwd();
-
-  // Create a persistent readline interface for the chat loop.
-  // Must be created AFTER all inquirer prompts (first-run setup) are done.
-  const chatRl = nodeRl.createInterface({ input: process.stdin, output: process.stdout, terminal: true });
-  chatRl.on('SIGINT', () => process.exit(0));
 
   // ── Full project understanding: scan + load memory + load skills ──────
   const scanSpinner = ora({ text: dim(s.scanning), spinner: 'dots' }).start();
@@ -208,11 +220,10 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
   while (true) {
     let line: string;
     try {
-      line = await readMessage(chatRl, userPrompt);
+      line = await readMessage(userPrompt);
     } catch {
       // Ctrl+C / closed stdin
       console.log('\n' + ok(s.goodbye));
-      chatRl.close();
       return;
     }
 
@@ -226,7 +237,6 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
         case '/exit':
         case '/quit':
           console.log(ok(s.goodbye));
-          chatRl.close();
           await mcp.close();
           return;
         case '/help':
