@@ -1,5 +1,5 @@
 {
-  "name": "vexi",
+  "name": "vexi-cli",
   "version": "0.5.1",
   "description": "Open-source AI coding agent for your terminal. Bring your own key, zero config, multilingual.",
   "type": "module",
