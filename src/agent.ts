@@ -16,7 +16,8 @@
  */
 
 import { basename } from 'node:path';
-import { platform } from 'node:os';
+import { platform, EOL } from 'node:os';
+import { exec as cpExec } from 'node:child_process';
 import { input, select, confirm } from '@inquirer/prompts';
 import * as nodeRl from 'node:readline';
 import ora from 'ora';
@@ -52,6 +53,27 @@ import { accent, dim, err, ok, printBanner, printStatusLine, userPrompt, vexiLab
 interface AgentOptions {
   lang: Lang;
   version: string;
+}
+
+/** Extract shell commands from fenced code blocks in an AI reply. */
+function extractShellBlocks(reply: string): string[] {
+  const blocks: string[] = [];
+  const re = /```(?:bash|sh|shell|cmd|powershell|ps1)\n([\s\S]*?)```/gi;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(reply)) !== null) {
+    const code = m[1].trim();
+    if (code) blocks.push(code);
+  }
+  return blocks;
+}
+
+/** Run a shell command and return { stdout, stderr, code }. */
+function runCommand(cmd: string, cwd: string): Promise<{ stdout: string; stderr: string; code: number }> {
+  return new Promise((resolve) => {
+    cpExec(cmd, { cwd, shell: process.platform === 'win32' ? 'powershell.exe' : '/bin/sh', maxBuffer: 1024 * 1024 * 4 }, (err, stdout, stderr) => {
+      resolve({ stdout: stdout ?? '', stderr: stderr ?? '', code: err?.code ?? 0 });
+    });
+  });
 }
 
 /**
@@ -297,6 +319,30 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
         history.push({ role: 'assistant', content: reply });
         recorder.add('assistant', reply);
 
+        // ── Auto-run shell commands suggested by the AI ──────────────
+        const shellBlocks = extractShellBlocks(reply);
+        for (const cmd of shellBlocks) {
+          console.log(accent('▶ run? ') + dim(cmd.slice(0, 120) + (cmd.length > 120 ? '…' : '')));
+          const yes = await confirm({ message: 'Execute', default: true }).catch(() => false);
+          if (!yes) {
+            history.push({ role: 'user', content: `COMMAND SKIPPED: ${cmd}` });
+            continue;
+          }
+          const runSpinner = ora({ text: dim('running…'), spinner: 'dots' }).start();
+          const { stdout, stderr, code } = await runCommand(cmd, root);
+          runSpinner.stop();
+          const output = [
+            stdout.trim() ? `STDOUT:\n${stdout.trim()}` : '',
+            stderr.trim() ? `STDERR:\n${stderr.trim()}` : '',
+            `EXIT CODE: ${code}`,
+          ].filter(Boolean).join('\n');
+          console.log(code === 0 ? ok('✓ done') : err(`✗ exit ${code}`));
+          if (stdout.trim()) console.log(dim(stdout.trim().slice(0, 800)));
+          if (stderr.trim()) console.log(warn(stderr.trim().slice(0, 400)));
+          history.push({ role: 'user', content: `COMMAND RESULT (${cmd.slice(0, 60)}):\n${output.slice(0, 6000)}` });
+          recorder.add('user', `COMMAND RESULT:\n${output.slice(0, 6000)}`);
+        }
+
         // MCP tool call requested by the model?
         const call = mcp.tools.length > 0 && round < 5 ? parseToolCall(reply) : null;
         if (!call) break;
@@ -400,6 +446,13 @@ function buildSystemPrompt(
     'Format code in fenced Markdown blocks with the language tag.',
     `Environment: OS=${platform()}, cwd=${process.cwd()}.`,
     `The user's preferred language is ${langNames[lang]}; reply in that language unless asked otherwise (code and identifiers stay in English).`,
+    '',
+    '## Command execution',
+    'You can run shell commands directly. Wrap any command you want to execute in a fenced code block tagged `bash` or `sh`.',
+    'Vexi will show the command to the user, ask for confirmation, execute it, and report the output back to you.',
+    'Use this to: install dependencies, build projects, run tests, start servers, scaffold files, etc.',
+    'Example: to install deps write:  ```bash\nnpm install\n```',
+    'After seeing the output, continue helping based on the result.',
   ];
   if (projectBlock) parts.push('', '## Project map', projectBlock);
   if (memoryText) parts.push('', memoryText);
