@@ -18,6 +18,7 @@
 import { basename } from 'node:path';
 import { platform } from 'node:os';
 import { input, select, confirm } from '@inquirer/prompts';
+import * as nodeRl from 'node:readline';
 import ora from 'ora';
 
 import { loadConfig, saveConfig, CONFIG_PATH, type VexiConfig } from './config.js';
@@ -53,6 +54,45 @@ interface AgentOptions {
   version: string;
 }
 
+/**
+ * Read a user message with multi-line paste support.
+ * Lines pasted together arrive within milliseconds of each other;
+ * a 30 ms debounce collects them all before resolving.
+ */
+function readMessage(rl: nodeRl.Interface, prompt: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const lines: string[] = [];
+    let settled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      rl.removeListener('line', onLine);
+      rl.removeListener('close', onClose);
+      resolve(lines.join('\n'));
+    };
+
+    const onLine = (line: string) => {
+      lines.push(line);
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(finish, 30);
+    };
+
+    const onClose = () => {
+      if (!settled) {
+        settled = true;
+        rl.removeListener('line', onLine);
+        reject(Object.assign(new Error('stdin closed'), { name: 'ExitPromptError' }));
+      }
+    };
+
+    rl.on('line', onLine);
+    rl.once('close', onClose);
+    process.stdout.write(prompt + ' ');
+  });
+}
+
 export async function runAgent(opts: AgentOptions): Promise<void> {
   const s = getStrings(opts.lang);
 
@@ -74,6 +114,11 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
 
   let provider = createProvider(config.provider, config.apiKey, config.model);
   const root = process.cwd();
+
+  // Create a persistent readline interface for the chat loop.
+  // Must be created AFTER all inquirer prompts (first-run setup) are done.
+  const chatRl = nodeRl.createInterface({ input: process.stdin, output: process.stdout, terminal: true });
+  chatRl.on('SIGINT', () => process.exit(0));
 
   // ── Full project understanding: scan + load memory + load skills ──────
   const scanSpinner = ora({ text: dim(s.scanning), spinner: 'dots' }).start();
@@ -163,10 +208,11 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
   while (true) {
     let line: string;
     try {
-      line = await input({ message: userPrompt, theme: { prefix: '' } });
+      line = await readMessage(chatRl, userPrompt);
     } catch {
       // Ctrl+C / closed stdin
       console.log('\n' + ok(s.goodbye));
+      chatRl.close();
       return;
     }
 
@@ -180,6 +226,7 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
         case '/exit':
         case '/quit':
           console.log(ok(s.goodbye));
+          chatRl.close();
           await mcp.close();
           return;
         case '/help':
