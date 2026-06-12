@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="fFNsx8MLQinM3HLTWsUl-L9h0Frq3p-HWC4AhmnaCIE" />
+<title>Vexi — AI coding agent for your terminal</title>
+<meta name="description" content="Vexi is an open-source AI coding agent that lives in your terminal. Bring your own key, any provider, zero config, 100% local.">
+<meta property="og:title" content="Vexi — AI coding agent for your terminal">
+<meta property="og:description" content="Bring your own key · Zero config · Multilingual · 100% local">
+<meta property="og:url" content="https://vexi.pro">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#ffffff;
+  --bg2:#f6f8fc;
+  --bg3:#eef2f9;
+  --border:#e3e9f2;
+  --border2:#d3dcea;
+  --ink:#0c1320;
+  --ink2:#4a5568;
+  --ink3:#8b95a7;
+  --blue:#2979FF;
+  --blue-dark:#1b5fd9;
+  --blue-soft:#eaf1ff;
+  --cyan:#00b8d4;
+  --green:#1aa260;
+  --term-bg:#0a0c12;
+  --sans:'Inter',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+.lucide{width:1em;height:1em;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none;display:inline-block;vertical-align:middle;flex-shrink:0}
+.btn-primary .lucide{width:17px;height:17px}
+.nav-gh .lucide{width:16px;height:16px}
+.feature-ic .lucide{width:23px;height:23px}
+.mail-ic .lucide{width:28px;height:28px}
+.contact-email .lucide{width:18px;height:18px}
+.legal-block h3 .ic .lucide{width:17px;height:17px}
+
+body.rtl{direction:rtl}
+body.rtl .term-body,body.rtl .install-box,body.rtl .ascii-logo{direction:ltr;text-align:left}
+body.rtl .foot-links{direction:rtl}
+
+a{color:inherit;text-decoration:none}
+.container{max-width:1080px;margin:0 auto;padding:0 24px}
+section{scroll-margin-top:80px}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.85);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px}
+.brand{display:flex;align-items:center;font-weight:800;font-size:21px;letter-spacing:1px}
+.nav-center{display:flex;gap:6px}
+.nav-center a{font-size:14px;font-weight:500;color:var(--ink2);padding:7px 12px;border-radius:8px;transition:all .15s}
+.nav-center a:hover{background:var(--bg3);color:var(--ink)}
+.nav-links{display:flex;align-items:center;gap:8px}
+.lang-switch{display:flex;gap:2px;background:var(--bg3);border-radius:9px;padding:3px}
+.lang-btn{font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 9px;border:none;background:none;color:var(--ink3);cursor:pointer;border-radius:7px;transition:all .15s}
+.lang-btn.active{background:#fff;color:var(--blue);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.lang-btn:hover:not(.active){color:var(--ink2)}
+.nav-gh{display:flex;align-items:center;gap:7px;background:var(--ink);color:#fff;font-size:13px;font-weight:600;padding:8px 15px;border-radius:9px;transition:all .15s}
+.nav-gh:hover{background:#000;transform:translateY(-1px)}
+.nav-gh svg{width:16px;height:16px;fill:#fff}
+
+/* HERO */
+.hero{padding:74px 0 50px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:760px;height:520px;background:radial-gradient(ellipse,rgba(41,121,255,.10),transparent 65%);pointer-events:none}
+.ascii-logo{
+  font-family:var(--mono);font-weight:700;font-size:13px;line-height:1.15;
+  color:var(--blue);margin-bottom:26px;white-space:pre;
+  display:inline-block;text-shadow:0 4px 20px rgba(41,121,255,.25);
+}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--blue-soft);color:var(--blue-dark);border:1px solid #cfe0ff;font-size:13px;font-weight:600;padding:6px 14px;border-radius:30px;margin-bottom:24px}
+.hero-badge .pulse{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(26,162,96,.5)}70%{box-shadow:0 0 0 8px rgba(26,162,96,0)}100%{box-shadow:0 0 0 0 rgba(26,162,96,0)}}
+.hero h1{font-size:54px;font-weight:800;letter-spacing:-2px;line-height:1.08;margin-bottom:20px}
+.hero h1 .grad{background:linear-gradient(120deg,var(--blue),var(--cyan));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p.sub{font-size:19px;color:var(--ink2);max-width:600px;margin:0 auto 34px}
+.install-box{display:inline-flex;align-items:center;gap:14px;background:var(--term-bg);border-radius:12px;padding:15px 20px;font-family:var(--mono);font-size:15px;box-shadow:0 14px 40px rgba(12,19,32,.22);margin-bottom:16px}
+.install-box .dollar{color:#3ddc84}
+.install-box .cmd{color:#fff}
+.install-box .copy{background:rgba(255,255,255,.1);border:none;color:#9aa6bb;font-family:var(--mono);font-size:12px;padding:5px 11px;border-radius:6px;cursor:pointer;transition:all .15s}
+.install-box .copy:hover{background:rgba(255,255,255,.18);color:#fff}
+.hero-actions{display:flex;gap:12px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;font-size:15px;background:var(--blue);color:#fff;font-size:15px;font-weight:600;padding:13px 26px;border-radius:11px;transition:all .15s;box-shadow:0 8px 24px rgba(41,121,255,.32)}
+.btn-primary:hover{background:var(--blue-dark);transform:translateY(-2px)}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--ink);border:1px solid var(--border2);font-size:15px;font-weight:600;padding:13px 26px;border-radius:11px;transition:all .15s}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+
+/* TERMINAL */
+.demo{padding:16px 0 64px}
+.term{max-width:760px;margin:0 auto;background:var(--term-bg);border-radius:14px;overflow:hidden;box-shadow:0 30px 70px rgba(12,19,32,.3)}
+.term-bar{display:flex;align-items:center;gap:7px;padding:13px 16px;background:#0e1118;border-bottom:1px solid #1b2030}
+.tdot{width:11px;height:11px;border-radius:50%}
+.td1{background:#ff5f57}.td2{background:#febc2e}.td3{background:#28c840}
+.term-tt{flex:1;text-align:center;font-family:var(--mono);font-size:12px;color:#4d5870}
+.term-body{padding:20px 22px;font-family:var(--mono);font-size:13px;line-height:1.85;color:#cdd4e0;min-height:280px}
+.tl{white-space:pre-wrap}
+.b{color:#5b9aff}.cy{color:#3ad4e5}.gr{color:#3ddc84}.yl{color:#ffd166}.dm{color:#6b7689}.wh{color:#fff}.rd{color:#ff6b6b}.ar{color:#5b9aff;font-weight:700}
+
+/* SECTIONS */
+.section{padding:66px 0}
+.section.alt{background:var(--bg2)}
+.section-head{text-align:center;max-width:640px;margin:0 auto 46px}
+.section-head .tag{font-size:13px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.section-head h2{font-size:36px;font-weight:800;letter-spacing:-1px;margin-bottom:14px}
+.section-head p{font-size:17px;color:var(--ink2)}
+
+/* FEATURES */
+.features{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px}
+.feature{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:26px;transition:all .2s}
+.feature:hover{border-color:var(--border2);box-shadow:0 12px 30px rgba(12,19,32,.07);transform:translateY(-3px)}
+.feature-ic{width:46px;height:46px;border-radius:12px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;font-size:22px;margin-bottom:16px}
+.feature h3{font-size:18px;font-weight:700;margin-bottom:8px}
+.feature p{font-size:14.5px;color:var(--ink2);line-height:1.65}
+
+/* COMPARISON */
+.compare{background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:8px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:560px}
+th,td{padding:15px 18px;text-align:start;font-size:14.5px}
+thead th{font-weight:700;color:var(--ink);border-bottom:2px solid var(--border2)}
+thead th.vexi{color:var(--blue)}
+tbody tr{border-bottom:1px solid var(--border)}
+tbody tr:last-child{border-bottom:none}
+td.feat{font-weight:600;color:var(--ink2)}
+.yes{color:var(--green);font-weight:700}
+.no{color:var(--ink3)}
+.vexi-col{background:rgba(41,121,255,.05);font-weight:700;color:var(--blue)}
+
+/* PROVIDERS */
+.providers{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:680px;margin:0 auto}
+.prov{display:flex;align-items:center;gap:9px;background:var(--bg);border:1px solid var(--border);padding:11px 18px;border-radius:11px;font-weight:600;font-size:14px}
+.prov .free{font-size:11px;background:#e3f9ee;color:var(--green);padding:2px 8px;border-radius:20px;font-weight:700}
+.prov .byok{font-size:11px;background:var(--blue-soft);color:var(--blue);padding:2px 8px;border-radius:20px;font-weight:700}
+
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center}
+.about-text h2{font-size:32px;font-weight:800;letter-spacing:-1px;margin-bottom:18px}
+.about-text p{font-size:16px;color:var(--ink2);margin-bottom:14px}
+.about-text .tag{font-size:13px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.about-card{background:var(--term-bg);border-radius:18px;padding:30px;color:#fff}
+.about-card .stat{display:flex;flex-direction:column;gap:2px;padding:14px 0;border-bottom:1px solid #1d2435}
+.about-card .stat:last-child{border-bottom:none}
+.about-card .stat b{font-size:26px;font-weight:800;color:#5b9aff}
+.about-card .stat span{font-size:13px;color:#8b95a7}
+
+/* CONTACT */
+.contact-box{max-width:540px;margin:0 auto;background:var(--bg);border:1px solid var(--border);border-radius:18px;padding:36px;text-align:center}
+.contact-box .mail-ic{width:60px;height:60px;border-radius:16px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;font-size:28px;margin:0 auto 18px}
+.contact-box h3{font-size:22px;font-weight:700;margin-bottom:10px}
+.contact-box p{font-size:15px;color:var(--ink2);margin-bottom:22px}
+.contact-email{display:inline-flex;align-items:center;gap:9px;background:var(--ink);color:#fff;font-size:16px;font-weight:600;padding:13px 26px;border-radius:11px;transition:all .15s}
+.contact-email:hover{background:#000;transform:translateY(-2px)}
+.contact-alt{margin-top:18px;font-size:14px;color:var(--ink3)}
+.contact-alt a{color:var(--blue);font-weight:600}
+
+/* LEGAL (privacy + policy) */
+.legal{max-width:760px;margin:0 auto}
+.legal-block{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:30px;margin-bottom:18px}
+.legal-block h3{font-size:20px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.legal-block h3 .ic{width:34px;height:34px;border-radius:9px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;font-size:17px}
+.legal-block p{font-size:14.5px;color:var(--ink2);margin-bottom:12px}
+.legal-block ul{margin:0 0 6px;padding-inline-start:22px}
+.legal-block li{font-size:14.5px;color:var(--ink2);margin-bottom:8px}
+.legal-block b{color:var(--ink)}
+
+/* CTA */
+.cta{margin:40px auto;max-width:1032px;background:linear-gradient(135deg,var(--term-bg),#141b2e);border-radius:24px;padding:60px 40px;text-align:center;color:#fff;position:relative;overflow:hidden}
+.cta::before{content:'';position:absolute;top:-100px;right:-50px;width:340px;height:340px;background:radial-gradient(circle,rgba(41,121,255,.3),transparent 60%)}
+.cta h2{font-size:34px;font-weight:800;letter-spacing:-1px;margin-bottom:14px;position:relative}
+.cta p{font-size:17px;color:#aeb8cc;margin-bottom:28px;position:relative}
+.cta .install-box{margin-bottom:0;position:relative}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:44px 0 36px}
+.foot-top{display:flex;justify-content:space-between;flex-wrap:wrap;gap:28px;margin-bottom:30px}
+.foot-brand{max-width:300px}
+.foot-brand .brand{font-size:18px;margin-bottom:12px}
+.foot-brand p{font-size:14px;color:var(--ink3);line-height:1.6}
+.foot-cols{display:flex;gap:54px;flex-wrap:wrap}
+.foot-col h4{font-size:13px;font-weight:700;color:var(--ink);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+.foot-col a{display:block;font-size:14px;color:var(--ink2);margin-bottom:10px;transition:color .15s}
+.foot-col a:hover{color:var(--blue)}
+.foot-bottom{border-top:1px solid var(--border);padding-top:24px;text-align:center;font-size:13px;color:var(--ink3)}
+.foot-bottom a{color:var(--blue);font-weight:600}
+
+@media(max-width:860px){
+  .hero h1{font-size:42px}
+  .about-grid{grid-template-columns:1fr;gap:28px}
+  .nav-center{display:none}
+}
+@media(max-width:600px){
+  .features{grid-template-columns:1fr}
+  .hero h1{font-size:32px;letter-spacing:-1px}
+  .hero p.sub{font-size:16px}
+  .ascii-logo{font-size:8px}
+  .install-box{font-size:13px;flex-wrap:wrap;gap:8px}
+  .lang-switch{display:none}
+  .section-head h2{font-size:27px}
+  .cta h2{font-size:25px}
+}
+.lang-mobile{display:none}
+@media(max-width:600px){.lang-mobile{display:flex;justify-content:center;gap:4px;padding:12px;background:var(--bg2);flex-wrap:wrap}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container nav-inner">
+    <a href="#top" class="brand">VEXI</a>
+    <div class="nav-center">
+      <a href="#features" data-i18n="navFeatures">Features</a>
+      <a href="#about" data-i18n="navAbout">About</a>
+      <a href="#contact" data-i18n="navContact">Contact</a>
+      <a href="#privacy" data-i18n="navPrivacy">Privacy</a>
+    </div>
+    <div class="nav-links">
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="ar">ع</button>
+        <button class="lang-btn" data-lang="fr">FR</button>
+        <button class="lang-btn" data-lang="es">ES</button>
+        <button class="lang-btn" data-lang="pt">PT</button>
+      </div>
+      <a href="https://github.com/Elomami1976/vexi" class="nav-gh" target="_blank">
+        <svg viewBox="0 0 24 24"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+  <div class="lang-mobile">
+    <button class="lang-btn active" data-lang="en">English</button>
+    <button class="lang-btn" data-lang="ar">عربي</button>
+    <button class="lang-btn" data-lang="fr">Français</button>
+    <button class="lang-btn" data-lang="es">Español</button>
+    <button class="lang-btn" data-lang="pt">Português</button>
+  </div>
+</nav>
+
+<span id="top"></span>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="container">
+    <div class="ascii-logo">██╗   ██╗███████╗██╗  ██╗██╗
+██║   ██║██╔════╝╚██╗██╔╝██║
+██║   ██║█████╗   ╚███╔╝ ██║
+╚██╗ ██╔╝██╔══╝   ██╔██╗ ██║
+ ╚████╔╝ ███████╗██╔╝ ██╗██║
+  ╚═══╝  ╚══════╝╚═╝  ╚═╝╚═╝</div>
+    <div class="hero-badge"><span class="pulse"></span><span data-i18n="badge">Open source · MIT · 100% local</span></div>
+    <h1><span data-i18n="h1a">Your AI coding agent,</span><br><span class="grad" data-i18n="h1b">right in your terminal</span></h1>
+    <p class="sub" data-i18n="sub">Vexi reads your project, edits your files, and remembers your decisions. Bring your own key from any provider. No signup, no server, no cost.</p>
+    <div class="install-box">
+      <span class="dollar">$</span><span class="cmd">npm install -g vexi-cli</span>
+      <button class="copy" id="copyBtn" data-i18n="copy">Copy</button>
+    </div>
+    <div class="hero-actions">
+      <a href="https://github.com/Elomami1976/vexi" class="btn-primary" target="_blank"><svg class="lucide" viewBox="0 0 24 24"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg><span data-i18n="getStarted">Star on GitHub</span></a>
+      <a href="#features" class="btn-ghost" data-i18n="learnMore">See features</a>
+    </div>
+  </div>
+</header>
+
+<!-- TERMINAL DEMO -->
+<section class="demo">
+  <div class="container">
+    <div class="term">
+      <div class="term-bar"><span class="tdot td1"></span><span class="tdot td2"></span><span class="tdot td3"></span><span class="term-tt">tarek@dev ~/my-project — vexi</span></div>
+      <div class="term-body">
+<div class="tl b">  Vexi — AI coding agent <span class="dm">v0.5.4</span></div>
+<div class="tl">&nbsp;</div>
+<div class="tl gr">✓ Provider detected: Groq <span class="dm">(saved · chmod 600)</span></div>
+<div class="tl gr">✓ Project scanned: Next.js + Supabase · 47 files</div>
+<div class="tl gr">✓ Memory loaded: 3 previous sessions</div>
+<div class="tl">&nbsp;</div>
+<div class="tl"><span class="ar">›</span> <span class="wh">fix the JWT bug in auth.ts</span></div>
+<div class="tl dm">  ↳ memory: "User chose JWT for authentication"</div>
+<div class="tl wh">Found it — <span class="cy">auth.ts:24</span> uses <span class="yl">expiresIn: 30</span> (30 seconds):</div>
+<div class="tl"><span class="rd">- </span>jwt.sign(payload, SECRET, { expiresIn: <span class="yl">30</span> })</div>
+<div class="tl"><span class="gr">+ </span>jwt.sign(payload, SECRET, { expiresIn: <span class="gr">"30m"</span> })</div>
+<div class="tl gr">✓ auth.ts updated <span class="dm">· logged to replay</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="container">
+    <div class="section-head">
+      <div class="tag" data-i18n="featTag">Features</div>
+      <h2 data-i18n="featH2">Everything you need, nothing you don't</h2>
+      <p data-i18n="featSub">Built for developers who live in the terminal.</p>
+    </div>
+    <div class="features">
+      <div class="feature"><div class="feature-ic"><svg class="lucide" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></div><h3 data-i18n="f1h">One-command install</h3><p data-i18n="f1p">npm install -g vexi-cli and you're running. Works on Windows, Mac, and Linux. No config files.</p></div>
+      <div class="feature"><div class="feature-ic"><svg class="lucide" viewBox="0 0 24 24"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/></svg></div><h3 data-i18n="f2h">Bring your own key</h3><p data-i18n="f2p">Auto-detects your provider from the key. Groq, Gemini, Anthropic, OpenAI, OpenRouter. Stored locally only.</p></div>
+      <div class="feature"><div class="feature-ic"><svg class="lucide" viewBox="0 0 24 24"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/></svg></div><h3 data-i18n="f3h">Never forgets</h3><p data-i18n="f3p">Context Compression Engine keeps a running summary of your decisions. No more re-explaining your project.</p></div>
+      <div class="feature"><div class="feature-ic"><svg class="lucide" viewBox="0 0 24 24"><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg></div><h3 data-i18n="f4h">Understands your project</h3><p data-i18n="f4p">Scans your entire codebase, not just the open file. Respects .gitignore, skips node_modules.</p></div>
+      <div class="feature"><div class="feature-ic"><svg class="lucide" viewBox="0 0 24 24"><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z"/><path d="m6.2 5.3 3.1 3.9"/><path d="m12.4 3.4 3.1 4"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></div><h3 data-i18n="f5h">Session replay</h3><p data-i18n="f5p">Export any session as an interactive HTML you can share. Watch the AI build, step by step.</p></div>
+      <div class="feature"><div class="feature-ic"><svg class="lucide" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></div><h3 data-i18n="f6h">Explains in your language</h3><p data-i18n="f6p">The first AI tool that explains any code in Arabic, Spanish, Portuguese, French, or English.</p></div>
+      <div class="feature"><div class="feature-ic"><svg class="lucide" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg></div><h3 data-i18n="f7h">Builds any language</h3><p data-i18n="f7p">Runs pip install, gcc, javac, cargo and more directly from chat. Vexi auto-executes build commands for Python, Java, C, Rust, Go, and any language.</p></div>
+      <div class="feature"><div class="feature-ic"><svg class="lucide" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div><h3 data-i18n="f8h">Learns your style</h3><p data-i18n="f8p">Mines your past sessions for corrections and builds a personal skill file — injected into every future session so you stop repeating yourself.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON -->
+<section class="section alt">
+  <div class="container">
+    <div class="section-head">
+      <div class="tag" data-i18n="cmpTag">Comparison</div>
+      <h2 data-i18n="cmpH2">How Vexi compares</h2>
+    </div>
+    <div class="compare">
+      <table>
+        <thead><tr>
+          <th data-i18n="cmpFeature">Feature</th><th class="vexi">Vexi</th><th>OpenCode</th><th>Claude Code</th><th>Cursor</th>
+        </tr></thead>
+        <tbody>
+          <tr><td class="feat" data-i18n="cmpInstall">One-command install</td><td class="vexi-col">✓</td><td class="no" data-i18n="cmpComplex">complex</td><td class="no" data-i18n="cmpComplex2">complex</td><td class="no" data-i18n="cmpApp">app</td></tr>
+          <tr><td class="feat" data-i18n="cmpByok">BYOK any provider</td><td class="vexi-col">✓</td><td class="no" data-i18n="cmpPartial">partial</td><td class="no" data-i18n="cmpAnthropic">Anthropic only</td><td class="no" data-i18n="cmpPartial2">partial</td></tr>
+          <tr><td class="feat" data-i18n="cmpMemory">Context memory</td><td class="vexi-col">✓</td><td class="no">✕</td><td class="no" data-i18n="cmpPartial3">partial</td><td class="no" data-i18n="cmpPartial4">partial</td></tr>
+          <tr><td class="feat" data-i18n="cmpMulti">Multi-language explain</td><td class="vexi-col">✓ <span data-i18n="cmp5lang">5 languages</span></td><td class="no" data-i18n="cmpEn">EN only</td><td class="no" data-i18n="cmpEn2">EN only</td><td class="no" data-i18n="cmpEn3">EN only</td></tr>
+          <tr><td class="feat" data-i18n="cmpOss">Open source</td><td class="vexi-col">✓ MIT</td><td class="yes">✓</td><td class="no">✕</td><td class="no">✕</td></tr>
+          <tr><td class="feat" data-i18n="cmpServer">No server needed</td><td class="vexi-col">✓</td><td class="yes">✓</td><td class="no">✕</td><td class="no">✕</td></tr>
+          <tr><td class="feat" data-i18n="cmpBuild">Builds any language</td><td class="vexi-col">✓</td><td class="no">✕</td><td class="no">✕</td><td class="no">✕</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- PROVIDERS -->
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <div class="tag" data-i18n="provTag">Providers</div>
+      <h2 data-i18n="provH2">Use any AI provider</h2>
+      <p data-i18n="provSub">Vexi detects your provider automatically from the key format.</p>
+    </div>
+    <div class="providers">
+      <div class="prov">Groq <span class="free" data-i18n="free">FREE</span></div>
+      <div class="prov">Google Gemini <span class="free" data-i18n="free2">FREE</span></div>
+      <div class="prov">Anthropic Claude <span class="byok">BYOK</span></div>
+      <div class="prov">OpenAI <span class="byok">BYOK</span></div>
+      <div class="prov">OpenRouter <span class="byok">BYOK</span></div>
+      <div class="prov">Mistral <span class="byok">BYOK</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="section alt" id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-text">
+        <div class="tag" data-i18n="aboutTag">About</div>
+        <h2 data-i18n="aboutH2">Why Vexi exists</h2>
+        <p data-i18n="aboutP1">Most AI coding tools are complex to install, locked to one provider, or send your code to a server. Vexi takes the opposite path.</p>
+        <p data-i18n="aboutP2">It's a single npm install, works with any API key you already have, and runs 100% on your machine. Your code and keys never leave your computer.</p>
+        <p data-i18n="aboutP3">Vexi is open source under the MIT license and built for developers everywhere — with first-class support for Arabic, Spanish, Portuguese, French, and English.</p>
+      </div>
+      <div class="about-card">
+        <div class="stat"><b>1</b><span data-i18n="stat1">command to install</span></div>
+        <div class="stat"><b>6+</b><span data-i18n="stat2">AI providers supported</span></div>
+        <div class="stat"><b>5</b><span data-i18n="stat3">languages</span></div>
+        <div class="stat"><b>100%</b><span data-i18n="stat4">local · no server · MIT</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="section" id="contact">
+  <div class="container">
+    <div class="section-head">
+      <div class="tag" data-i18n="contactTag">Contact</div>
+      <h2 data-i18n="contactH2">Get in touch</h2>
+    </div>
+    <div class="contact-box">
+      <div class="mail-ic"><svg class="lucide" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></div>
+      <h3 data-i18n="contactBoxH">We'd love to hear from you</h3>
+      <p data-i18n="contactBoxP">Questions, feedback, bug reports, or partnership ideas — reach out anytime.</p>
+      <a href="mailto:hello@vexi.pro" class="contact-email"><svg class="lucide" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg> hello@vexi.pro</a>
+      <div class="contact-alt"><span data-i18n="contactAltA">Found a bug? Open an issue on</span> <a href="https://github.com/Elomami1976/vexi/issues" target="_blank">GitHub</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRIVACY + POLICY -->
+<section class="section alt" id="privacy">
+  <div class="container">
+    <div class="section-head">
+      <div class="tag" data-i18n="privTag">Privacy & Terms</div>
+      <h2 data-i18n="privH2">Privacy Policy & Terms</h2>
+    </div>
+    <div class="legal">
+      <div class="legal-block">
+        <h3><span class="ic"><svg class="lucide" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><span data-i18n="privBlockH">Privacy Policy</span></h3>
+        <p data-i18n="privP1"><b>Vexi runs entirely on your machine.</b> The Vexi CLI does not collect, transmit, or store any of your data on our servers — because there are no Vexi servers.</p>
+        <ul>
+          <li data-i18n="privL1"><b>Your API keys</b> are stored locally in ~/.vexi/config.json with owner-only permissions and are never sent to us.</li>
+          <li data-i18n="privL2"><b>Your code</b> is only sent to the AI provider whose key you supply (e.g. Groq, Gemini), under that provider's own privacy policy.</li>
+          <li data-i18n="privL3"><b>Memory and sessions</b> are saved locally in your project's .vexi/ folder and never leave your device.</li>
+          <li data-i18n="privL4"><b>This website</b> (vexi.pro) does not use tracking cookies or sell any personal data.</li>
+        </ul>
+      </div>
+      <div class="legal-block">
+        <h3><span class="ic"><svg class="lucide" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></span><span data-i18n="termsBlockH">Terms of Use</span></h3>
+        <p data-i18n="termsP1">Vexi is free and open-source software provided under the <b>MIT License</b>.</p>
+        <ul>
+          <li data-i18n="termsL1">The software is provided "as is", without warranty of any kind.</li>
+          <li data-i18n="termsL2">You are responsible for the API costs charged by the AI provider whose key you use.</li>
+          <li data-i18n="termsL3">You are responsible for reviewing any code changes Vexi makes before applying them.</li>
+          <li data-i18n="termsL4">The full license text is available in the GitHub repository.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="container">
+  <div class="cta">
+    <h2 data-i18n="ctaH2">Start coding with Vexi today</h2>
+    <p data-i18n="ctaP">Free, open source, and yours to keep. One command away.</p>
+    <div class="install-box">
+      <span class="dollar">$</span><span class="cmd">npm install -g vexi-cli</span>
+      <button class="copy" id="copyBtn2" data-i18n="copy2">Copy</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a href="#top" class="brand">VEXI</a>
+        <p data-i18n="footTagline">Open-source AI coding agent for your terminal. Bring your own key, zero config, 100% local.</p>
+      </div>
+      <div class="foot-cols">
+        <div class="foot-col">
+          <h4 data-i18n="footProduct">Product</h4>
+          <a href="#features" data-i18n="navFeatures2">Features</a>
+          <a href="#about" data-i18n="navAbout2">About</a>
+          <a href="https://www.npmjs.com/package/vexi-cli" target="_blank">npm</a>
+          <a href="https://github.com/Elomami1976/vexi" target="_blank">GitHub</a>
+        </div>
+        <div class="foot-col">
+          <h4 data-i18n="footResources">Resources</h4>
+          <a href="https://github.com/Elomami1976/vexi#readme" target="_blank" data-i18n="footDocs">Documentation</a>
+          <a href="https://github.com/Elomami1976/vexi/issues" target="_blank" data-i18n="footIssues">Report issue</a>
+          <a href="#contact" data-i18n="navContact2">Contact</a>
+          <a href="#privacy" data-i18n="navPrivacy2">Privacy & Terms</a>
+        </div>
+        <div class="foot-col">
+          <h4 data-i18n="footContact">Contact</h4>
+          <a href="mailto:hello@vexi.pro">hello@vexi.pro</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">© 2026 Vexi · MIT License · <span data-i18n="footBuilt">Built by</span> <a href="https://github.com/Elomami1976" target="_blank">Tarek Elomami</a></div>
+  </div>
+</footer>
+
+<script>
+const I18N = {
+  en:{navFeatures:"Features",navAbout:"About",navContact:"Contact",navPrivacy:"Privacy",badge:"Open source · MIT · 100% local",h1a:"Your AI coding agent,",h1b:"right in your terminal",sub:"Vexi reads your project, edits your files, and remembers your decisions. Bring your own key from any provider. No signup, no server, no cost.",copy:"Copy",copy2:"Copy",getStarted:"Star on GitHub",learnMore:"See features",featTag:"Features",featH2:"Everything you need, nothing you don't",featSub:"Built for developers who live in the terminal.",f1h:"One-command install",f1p:"npm install -g vexi-cli and you're running. Works on Windows, Mac, and Linux. No config files.",f2h:"Bring your own key",f2p:"Auto-detects your provider from the key. Groq, Gemini, Anthropic, OpenAI, OpenRouter. Stored locally only.",f3h:"Never forgets",f3p:"Context Compression Engine keeps a running summary of your decisions. No more re-explaining your project.",f4h:"Understands your project",f4p:"Scans your entire codebase, not just the open file. Respects .gitignore, skips node_modules.",f5h:"Session replay",f5p:"Export any session as an interactive HTML you can share. Watch the AI build, step by step.",f6h:"Explains in your language",f6p:"The first AI tool that explains any code in Arabic, Spanish, Portuguese, French, or English.",cmpTag:"Comparison",cmpH2:"How Vexi compares",cmpFeature:"Feature",cmpInstall:"One-command install",cmpComplex:"complex",cmpComplex2:"complex",cmpApp:"app",cmpByok:"BYOK any provider",cmpPartial:"partial",cmpAnthropic:"Anthropic only",cmpPartial2:"partial",cmpMemory:"Context memory",cmpPartial3:"partial",cmpPartial4:"partial",cmpMulti:"Multi-language explain",cmp5lang:"5 languages",cmpEn:"EN only",cmpEn2:"EN only",cmpEn3:"EN only",cmpOss:"Open source",cmpServer:"No server needed",cmpBuild:"Builds any language",f7h:"Builds any language",f7p:"Runs pip install, gcc, javac, cargo and more directly from chat. Vexi auto-executes build commands for Python, Java, C, Rust, Go, and any language.",f8h:"Learns your style",f8p:"Mines your past sessions for corrections and builds a personal skill file — injected into every future session so you stop repeating yourself.",provTag:"Providers",provH2:"Use any AI provider",provSub:"Vexi detects your provider automatically from the key format.",free:"FREE",free2:"FREE",aboutTag:"About",aboutH2:"Why Vexi exists",aboutP1:"Most AI coding tools are complex to install, locked to one provider, or send your code to a server. Vexi takes the opposite path.",aboutP2:"It's a single npm install, works with any API key you already have, and runs 100% on your machine. Your code and keys never leave your computer.",aboutP3:"Vexi is open source under the MIT license and built for developers everywhere — with first-class support for Arabic, Spanish, Portuguese, French, and English.",stat1:"command to install",stat2:"AI providers supported",stat3:"languages",stat4:"local · no server · MIT",contactTag:"Contact",contactH2:"Get in touch",contactBoxH:"We'd love to hear from you",contactBoxP:"Questions, feedback, bug reports, or partnership ideas — reach out anytime.",contactAltA:"Found a bug? Open an issue on",privTag:"Privacy & Terms",privH2:"Privacy Policy & Terms",privBlockH:"Privacy Policy",privP1:"Vexi runs entirely on your machine. The Vexi CLI does not collect, transmit, or store any of your data on our servers — because there are no Vexi servers.",privL1:"Your API keys are stored locally in ~/.vexi/config.json with owner-only permissions and are never sent to us.",privL2:"Your code is only sent to the AI provider whose key you supply (e.g. Groq, Gemini), under that provider's own privacy policy.",privL3:"Memory and sessions are saved locally in your project's .vexi/ folder and never leave your device.",privL4:"This website (vexi.pro) does not use tracking cookies or sell any personal data.",termsBlockH:"Terms of Use",termsP1:"Vexi is free and open-source software provided under the MIT License.",termsL1:"The software is provided \"as is\", without warranty of any kind.",termsL2:"You are responsible for the API costs charged by the AI provider whose key you use.",termsL3:"You are responsible for reviewing any code changes Vexi makes before applying them.",termsL4:"The full license text is available in the GitHub repository.",ctaH2:"Start coding with Vexi today",ctaP:"Free, open source, and yours to keep. One command away.",footTagline:"Open-source AI coding agent for your terminal. Bring your own key, zero config, 100% local.",footProduct:"Product",footResources:"Resources",footContact:"Contact",footDocs:"Documentation",footIssues:"Report issue",navFeatures2:"Features",navAbout2:"About",navContact2:"Contact",navPrivacy2:"Privacy & Terms",footBuilt:"Built by"},
+  ar:{navFeatures:"المميزات",navAbout:"عن Vexi",navContact:"تواصل",navPrivacy:"الخصوصية",badge:"مفتوح المصدر · MIT · محلي 100%",h1a:"عميل البرمجة بالذكاء الاصطناعي،",h1b:"داخل الطرفية مباشرة",sub:"يقرأ Vexi مشروعك، يعدّل ملفاتك، ويتذكر قراراتك. أحضر مفتاحك من أي مزود. بدون تسجيل، بدون سيرفر، بدون تكلفة.",copy:"نسخ",copy2:"نسخ",getStarted:"نجمة على GitHub",learnMore:"المميزات",featTag:"المميزات",featH2:"كل ما تحتاجه، بلا زيادة",featSub:"مصمم للمطورين الذين يعيشون في الطرفية.",f1h:"تثبيت بأمر واحد",f1p:"اكتب npm install -g vexi-cli وابدأ فوراً. يعمل على Windows وMac وLinux. بدون ملفات إعداد.",f2h:"أحضر مفتاحك الخاص",f2p:"يكتشف مزودك تلقائياً من المفتاح. Groq وGemini وAnthropic وOpenAI وOpenRouter. يُخزن محلياً فقط.",f3h:"لا ينسى أبداً",f3p:"محرك ضغط السياق يحتفظ بملخص مستمر لقراراتك. لا حاجة لإعادة شرح مشروعك.",f4h:"يفهم مشروعك",f4p:"يفحص مشروعك بالكامل، وليس الملف المفتوح فقط. يحترم .gitignore ويتجاهل node_modules.",f5h:"إعادة عرض الجلسة",f5p:"صدّر أي جلسة كملف HTML تفاعلي تشاركه. شاهد الذكاء الاصطناعي يبني خطوة بخطوة.",f6h:"يشرح بلغتك",f6p:"أول أداة AI تشرح أي كود بالعربية والإسبانية والبرتغالية والفرنسية والإنجليزية.",cmpTag:"مقارنة",cmpH2:"كيف يتميز Vexi",cmpFeature:"الميزة",cmpInstall:"تثبيت بأمر واحد",cmpComplex:"معقد",cmpComplex2:"معقد",cmpApp:"تطبيق",cmpByok:"أي مزود BYOK",cmpPartial:"جزئي",cmpAnthropic:"Anthropic فقط",cmpPartial2:"جزئي",cmpMemory:"ذاكرة السياق",cmpPartial3:"جزئي",cmpPartial4:"جزئي",cmpMulti:"شرح متعدد اللغات",cmp5lang:"5 لغات",cmpEn:"إنجليزي فقط",cmpEn2:"إنجليزي فقط",cmpEn3:"إنجليزي فقط",cmpOss:"مفتوح المصدر",cmpServer:"بدون سيرفر",cmpBuild:"يبني أي لغة",f7h:"يبني أي لغة",f7p:"يشغّل pip install وgcc وjavac وcargo مباشرةً من المحادثة. Vexi ينفّذ أوامر البناء تلقائياً لـ Python وJava وC وRust وGo وأي لغة أخرى.",f8h:"يتعلم أسلوبك",f8p:"يستخرج تصحيحاتك من جلساتك السابقة ويحوّلها إلى ملف مهارة شخصي يُضاف تلقائياً لكل جلسة مستقبلية.",provTag:"المزودون",provH2:"استخدم أي مزود AI",provSub:"يكتشف Vexi مزودك تلقائياً من صيغة المفتاح.",free:"مجاني",free2:"مجاني",aboutTag:"عن Vexi",aboutH2:"لماذا وُجد Vexi",aboutP1:"معظم أدوات البرمجة بالذكاء الاصطناعي معقدة التثبيت، أو مقيدة بمزود واحد، أو ترسل كودك لسيرفر. Vexi يسلك الطريق المعاكس.",aboutP2:"تثبيت واحد عبر npm، يعمل مع أي مفتاح API لديك، ويعمل 100% على جهازك. كودك ومفاتيحك لا تغادر حاسوبك أبداً.",aboutP3:"Vexi مفتوح المصدر برخصة MIT، ومبني للمطورين في كل مكان — بدعم كامل للعربية والإسبانية والبرتغالية والفرنسية والإنجليزية.",stat1:"أمر للتثبيت",stat2:"مزود ذكاء اصطناعي",stat3:"لغات",stat4:"محلي · بدون سيرفر · MIT",contactTag:"تواصل",contactH2:"تواصل معنا",contactBoxH:"يسعدنا أن نسمع منك",contactBoxP:"أسئلة، ملاحظات، تقارير أخطاء، أو أفكار شراكة — تواصل في أي وقت.",contactAltA:"وجدت خطأً؟ افتح issue على",privTag:"الخصوصية والشروط",privH2:"سياسة الخصوصية والشروط",privBlockH:"سياسة الخصوصية",privP1:"يعمل Vexi بالكامل على جهازك. أداة Vexi لا تجمع أو ترسل أو تخزن أي من بياناتك على خوادمنا — لأنه لا توجد خوادم لـ Vexi.",privL1:"مفاتيح API الخاصة بك تُخزن محلياً في ~/.vexi/config.json بصلاحيات للمالك فقط ولا تُرسل إلينا أبداً.",privL2:"كودك يُرسل فقط لمزود الذكاء الاصطناعي الذي تقدم مفتاحه (مثل Groq وGemini)، وفق سياسة خصوصية ذلك المزود.",privL3:"الذاكرة والجلسات تُحفظ محلياً في مجلد .vexi/ بمشروعك ولا تغادر جهازك أبداً.",privL4:"هذا الموقع (vexi.pro) لا يستخدم كوكيز تتبع ولا يبيع أي بيانات شخصية.",termsBlockH:"شروط الاستخدام",termsP1:"Vexi برنامج مجاني ومفتوح المصدر برخصة MIT.",termsL1:"البرنامج يُقدم \"كما هو\"، بدون أي ضمان من أي نوع.",termsL2:"أنت مسؤول عن تكاليف API التي يفرضها مزود الذكاء الاصطناعي الذي تستخدم مفتاحه.",termsL3:"أنت مسؤول عن مراجعة أي تعديلات يجريها Vexi على الكود قبل تطبيقها.",termsL4:"نص الرخصة الكامل متوفر في مستودع GitHub.",ctaH2:"ابدأ البرمجة مع Vexi اليوم",ctaP:"مجاني، مفتوح المصدر، وملكك. على بُعد أمر واحد.",footTagline:"عميل برمجة مفتوح المصدر بالذكاء الاصطناعي لطرفيتك. أحضر مفتاحك، بدون إعداد، محلي 100%.",footProduct:"المنتج",footResources:"مصادر",footContact:"تواصل",footDocs:"التوثيق",footIssues:"الإبلاغ عن مشكلة",navFeatures2:"المميزات",navAbout2:"عن Vexi",navContact2:"تواصل",navPrivacy2:"الخصوصية والشروط",footBuilt:"بناه"},
+  fr:{navFeatures:"Fonctions",navAbout:"À propos",navContact:"Contact",navPrivacy:"Confidentialité",badge:"Open source · MIT · 100% local",h1a:"Votre agent de code IA,",h1b:"directement dans votre terminal",sub:"Vexi lit votre projet, modifie vos fichiers et mémorise vos décisions. Apportez votre clé de n'importe quel fournisseur. Sans inscription, sans serveur, gratuit.",copy:"Copier",copy2:"Copier",getStarted:"Star sur GitHub",learnMore:"Voir les fonctions",featTag:"Fonctionnalités",featH2:"Tout ce dont vous avez besoin, rien de plus",featSub:"Conçu pour les développeurs qui vivent dans le terminal.",f1h:"Installation en une commande",f1p:"npm install -g vexi-cli et c'est parti. Fonctionne sur Windows, Mac et Linux. Sans configuration.",f2h:"Apportez votre clé",f2p:"Détecte votre fournisseur depuis la clé. Groq, Gemini, Anthropic, OpenAI, OpenRouter. Stockée localement.",f3h:"N'oublie jamais",f3p:"Le moteur de compression de contexte garde un résumé continu de vos décisions. Plus besoin de tout réexpliquer.",f4h:"Comprend votre projet",f4p:"Analyse tout votre code, pas seulement le fichier ouvert. Respecte .gitignore, ignore node_modules.",f5h:"Relecture de session",f5p:"Exportez toute session en HTML interactif à partager. Regardez l'IA construire, étape par étape.",f6h:"Explique dans votre langue",f6p:"Le premier outil IA qui explique le code en arabe, espagnol, portugais, français ou anglais.",cmpTag:"Comparaison",cmpH2:"Vexi face aux autres",cmpFeature:"Fonction",cmpInstall:"Installation en une commande",cmpComplex:"complexe",cmpComplex2:"complexe",cmpApp:"app",cmpByok:"BYOK tout fournisseur",cmpPartial:"partiel",cmpAnthropic:"Anthropic seul",cmpPartial2:"partiel",cmpMemory:"Mémoire de contexte",cmpPartial3:"partiel",cmpPartial4:"partiel",cmpMulti:"Explication multilingue",cmp5lang:"5 langues",cmpEn:"EN seul",cmpEn2:"EN seul",cmpEn3:"EN seul",cmpOss:"Open source",cmpServer:"Sans serveur",cmpBuild:"Compile n'importe quel langage",f7h:"Compile n'importe quel langage",f7p:"Lance pip install, gcc, javac, cargo et plus depuis le chat. Vexi exécute les commandes de compilation pour Python, Java, C, Rust, Go et tout autre langage.",f8h:"Apprend votre style",f8p:"Analyse vos sessions passées pour en extraire vos corrections et crée un fichier skill personnel injecté dans chaque future session.",provTag:"Fournisseurs",provH2:"Utilisez n'importe quel fournisseur IA",provSub:"Vexi détecte votre fournisseur automatiquement depuis la clé.",free:"GRATUIT",free2:"GRATUIT",aboutTag:"À propos",aboutH2:"Pourquoi Vexi existe",aboutP1:"La plupart des outils IA sont complexes à installer, liés à un seul fournisseur, ou envoient votre code à un serveur. Vexi prend le chemin inverse.",aboutP2:"Une seule installation npm, fonctionne avec n'importe quelle clé API, et tourne 100% sur votre machine. Votre code et vos clés ne quittent jamais votre ordinateur.",aboutP3:"Vexi est open source sous licence MIT, conçu pour les développeurs du monde entier — avec un support complet de l'arabe, l'espagnol, le portugais, le français et l'anglais.",stat1:"commande pour installer",stat2:"fournisseurs IA",stat3:"langues",stat4:"local · sans serveur · MIT",contactTag:"Contact",contactH2:"Contactez-nous",contactBoxH:"Nous aimerions vous entendre",contactBoxP:"Questions, retours, rapports de bugs ou idées de partenariat — écrivez-nous.",contactAltA:"Un bug ? Ouvrez un ticket sur",privTag:"Confidentialité & Conditions",privH2:"Politique de confidentialité & Conditions",privBlockH:"Politique de confidentialité",privP1:"Vexi fonctionne entièrement sur votre machine. Le CLI Vexi ne collecte, ne transmet ni ne stocke aucune de vos données sur nos serveurs — car il n'y a pas de serveurs Vexi.",privL1:"Vos clés API sont stockées localement dans ~/.vexi/config.json avec des permissions réservées au propriétaire et ne nous sont jamais envoyées.",privL2:"Votre code n'est envoyé qu'au fournisseur IA dont vous fournissez la clé (ex. Groq, Gemini), selon la politique de ce fournisseur.",privL3:"La mémoire et les sessions sont enregistrées localement dans le dossier .vexi/ de votre projet et ne quittent jamais votre appareil.",privL4:"Ce site (vexi.pro) n'utilise pas de cookies de suivi et ne vend aucune donnée personnelle.",termsBlockH:"Conditions d'utilisation",termsP1:"Vexi est un logiciel libre et open source sous licence MIT.",termsL1:"Le logiciel est fourni \"tel quel\", sans garantie d'aucune sorte.",termsL2:"Vous êtes responsable des coûts API facturés par le fournisseur dont vous utilisez la clé.",termsL3:"Vous êtes responsable de vérifier les modifications de code de Vexi avant de les appliquer.",termsL4:"Le texte complet de la licence est disponible dans le dépôt GitHub.",ctaH2:"Commencez avec Vexi aujourd'hui",ctaP:"Gratuit, open source, et à vous pour toujours. À une commande près.",footTagline:"Agent de code IA open source pour votre terminal. Apportez votre clé, sans config, 100% local.",footProduct:"Produit",footResources:"Ressources",footContact:"Contact",footDocs:"Documentation",footIssues:"Signaler un bug",navFeatures2:"Fonctions",navAbout2:"À propos",navContact2:"Contact",navPrivacy2:"Confidentialité",footBuilt:"Créé par"},
+  es:{navFeatures:"Funciones",navAbout:"Acerca de",navContact:"Contacto",navPrivacy:"Privacidad",badge:"Código abierto · MIT · 100% local",h1a:"Tu agente de código IA,",h1b:"en tu terminal",sub:"Vexi lee tu proyecto, edita tus archivos y recuerda tus decisiones. Trae tu propia clave de cualquier proveedor. Sin registro, sin servidor, gratis.",copy:"Copiar",copy2:"Copiar",getStarted:"Star en GitHub",learnMore:"Ver funciones",featTag:"Funciones",featH2:"Todo lo que necesitas, nada más",featSub:"Hecho para desarrolladores que viven en la terminal.",f1h:"Instalación en un comando",f1p:"npm install -g vexi-cli y listo. Funciona en Windows, Mac y Linux. Sin archivos de configuración.",f2h:"Trae tu propia clave",f2p:"Detecta tu proveedor desde la clave. Groq, Gemini, Anthropic, OpenAI, OpenRouter. Almacenada localmente.",f3h:"Nunca olvida",f3p:"El motor de compresión de contexto mantiene un resumen continuo de tus decisiones. No más reexplicaciones.",f4h:"Entiende tu proyecto",f4p:"Analiza todo tu código, no solo el archivo abierto. Respeta .gitignore, omite node_modules.",f5h:"Repetición de sesión",f5p:"Exporta cualquier sesión como HTML interactivo para compartir. Mira a la IA construir, paso a paso.",f6h:"Explica en tu idioma",f6p:"La primera herramienta IA que explica código en árabe, español, portugués, francés o inglés.",cmpTag:"Comparación",cmpH2:"Cómo se compara Vexi",cmpFeature:"Función",cmpInstall:"Instalación en un comando",cmpComplex:"complejo",cmpComplex2:"complejo",cmpApp:"app",cmpByok:"BYOK cualquier proveedor",cmpPartial:"parcial",cmpAnthropic:"Solo Anthropic",cmpPartial2:"parcial",cmpMemory:"Memoria de contexto",cmpPartial3:"parcial",cmpPartial4:"parcial",cmpMulti:"Explicación multilingüe",cmp5lang:"5 idiomas",cmpEn:"Solo EN",cmpEn2:"Solo EN",cmpEn3:"Solo EN",cmpOss:"Código abierto",cmpServer:"Sin servidor",cmpBuild:"Compila cualquier lenguaje",f7h:"Compila cualquier lenguaje",f7p:"Ejecuta pip install, gcc, javac, cargo y más desde el chat. Vexi auto-ejecuta comandos de compilación para Python, Java, C, Rust, Go y cualquier lenguaje.",f8h:"Aprende tu estilo",f8p:"Extrae tus correcciones de sesiones pasadas y crea un archivo skill personal inyectado en cada sesión futura.",provTag:"Proveedores",provH2:"Usa cualquier proveedor IA",provSub:"Vexi detecta tu proveedor automáticamente desde la clave.",free:"GRATIS",free2:"GRATIS",aboutTag:"Acerca de",aboutH2:"Por qué existe Vexi",aboutP1:"La mayoría de herramientas IA son complejas de instalar, atadas a un proveedor, o envían tu código a un servidor. Vexi toma el camino opuesto.",aboutP2:"Una sola instalación npm, funciona con cualquier clave API que ya tengas, y corre 100% en tu máquina. Tu código y claves nunca salen de tu computadora.",aboutP3:"Vexi es código abierto bajo licencia MIT, hecho para desarrolladores de todo el mundo — con soporte completo de árabe, español, portugués, francés e inglés.",stat1:"comando para instalar",stat2:"proveedores IA",stat3:"idiomas",stat4:"local · sin servidor · MIT",contactTag:"Contacto",contactH2:"Ponte en contacto",contactBoxH:"Nos encantaría saber de ti",contactBoxP:"Preguntas, comentarios, reportes de errores o ideas de colaboración — escríbenos.",contactAltA:"¿Encontraste un error? Abre un issue en",privTag:"Privacidad y Términos",privH2:"Política de privacidad y Términos",privBlockH:"Política de privacidad",privP1:"Vexi funciona completamente en tu máquina. El CLI de Vexi no recopila, transmite ni almacena ninguno de tus datos en nuestros servidores — porque no hay servidores de Vexi.",privL1:"Tus claves API se almacenan localmente en ~/.vexi/config.json con permisos solo para el propietario y nunca se nos envían.",privL2:"Tu código solo se envía al proveedor IA cuya clave proporcionas (ej. Groq, Gemini), bajo la política de ese proveedor.",privL3:"La memoria y las sesiones se guardan localmente en la carpeta .vexi/ de tu proyecto y nunca salen de tu dispositivo.",privL4:"Este sitio (vexi.pro) no usa cookies de rastreo ni vende datos personales.",termsBlockH:"Términos de uso",termsP1:"Vexi es software libre y de código abierto bajo la Licencia MIT.",termsL1:"El software se proporciona \"tal cual\", sin garantía de ningún tipo.",termsL2:"Eres responsable de los costos de API cobrados por el proveedor cuya clave uses.",termsL3:"Eres responsable de revisar cualquier cambio de código que Vexi haga antes de aplicarlo.",termsL4:"El texto completo de la licencia está disponible en el repositorio de GitHub.",ctaH2:"Empieza con Vexi hoy",ctaP:"Gratis, código abierto y tuyo para siempre. A un comando de distancia.",footTagline:"Agente de código IA de código abierto para tu terminal. Trae tu clave, sin config, 100% local.",footProduct:"Producto",footResources:"Recursos",footContact:"Contacto",footDocs:"Documentación",footIssues:"Reportar error",navFeatures2:"Funciones",navAbout2:"Acerca de",navContact2:"Contacto",navPrivacy2:"Privacidad",footBuilt:"Creado por"},
+  pt:{navFeatures:"Recursos",navAbout:"Sobre",navContact:"Contato",navPrivacy:"Privacidade",badge:"Código aberto · MIT · 100% local",h1a:"Seu agente de código IA,",h1b:"direto no seu terminal",sub:"O Vexi lê seu projeto, edita seus arquivos e lembra suas decisões. Traga sua própria chave de qualquer provedor. Sem cadastro, sem servidor, sem custo.",copy:"Copiar",copy2:"Copiar",getStarted:"Star no GitHub",learnMore:"Ver recursos",featTag:"Recursos",featH2:"Tudo que você precisa, nada além",featSub:"Feito para desenvolvedores que vivem no terminal.",f1h:"Instalação em um comando",f1p:"npm install -g vexi-cli e pronto. Funciona no Windows, Mac e Linux. Sem arquivos de configuração.",f2h:"Traga sua própria chave",f2p:"Detecta seu provedor pela chave. Groq, Gemini, Anthropic, OpenAI, OpenRouter. Armazenada localmente.",f3h:"Nunca esquece",f3p:"O motor de compressão de contexto mantém um resumo contínuo das suas decisões. Sem reexplicar o projeto.",f4h:"Entende seu projeto",f4p:"Analisa todo o código, não só o arquivo aberto. Respeita o .gitignore, ignora node_modules.",f5h:"Replay de sessão",f5p:"Exporte qualquer sessão como HTML interativo para compartilhar. Veja a IA construir, passo a passo.",f6h:"Explica no seu idioma",f6p:"A primeira ferramenta IA que explica código em árabe, espanhol, português, francês ou inglês.",cmpTag:"Comparação",cmpH2:"Como o Vexi se compara",cmpFeature:"Recurso",cmpInstall:"Instalação em um comando",cmpComplex:"complexo",cmpComplex2:"complexo",cmpApp:"app",cmpByok:"BYOK qualquer provedor",cmpPartial:"parcial",cmpAnthropic:"Só Anthropic",cmpPartial2:"parcial",cmpMemory:"Memória de contexto",cmpPartial3:"parcial",cmpPartial4:"parcial",cmpMulti:"Explicação multilíngue",cmp5lang:"5 idiomas",cmpEn:"Só EN",cmpEn2:"Só EN",cmpEn3:"Só EN",cmpOss:"Código aberto",cmpServer:"Sem servidor",cmpBuild:"Compila qualquer linguagem",f7h:"Compila qualquer linguagem",f7p:"Roda pip install, gcc, javac, cargo e mais direto do chat. O Vexi executa comandos de build para Python, Java, C, Rust, Go e qualquer linguagem.",f8h:"Aprende seu estilo",f8p:"Extrai suas correções de sessões passadas e cria um arquivo de skill pessoal injetado em cada sessão futura.",provTag:"Provedores",provH2:"Use qualquer provedor IA",provSub:"O Vexi detecta seu provedor automaticamente pela chave.",free:"GRÁTIS",free2:"GRÁTIS",aboutTag:"Sobre",aboutH2:"Por que o Vexi existe",aboutP1:"A maioria das ferramentas IA é complexa de instalar, presa a um provedor, ou envia seu código para um servidor. O Vexi segue o caminho oposto.",aboutP2:"Uma única instalação npm, funciona com qualquer chave API que você já tem, e roda 100% na sua máquina. Seu código e chaves nunca saem do seu computador.",aboutP3:"O Vexi é código aberto sob licença MIT, feito para desenvolvedores do mundo todo — com suporte completo a árabe, espanhol, português, francês e inglês.",stat1:"comando para instalar",stat2:"provedores IA",stat3:"idiomas",stat4:"local · sem servidor · MIT",contactTag:"Contato",contactH2:"Fale conosco",contactBoxH:"Adoraríamos ouvir você",contactBoxP:"Perguntas, feedback, relatórios de bugs ou ideias de parceria — fale conosco.",contactAltA:"Encontrou um bug? Abra uma issue no",privTag:"Privacidade e Termos",privH2:"Política de Privacidade e Termos",privBlockH:"Política de Privacidade",privP1:"O Vexi roda inteiramente na sua máquina. O CLI do Vexi não coleta, transmite nem armazena nenhum dado seu em nossos servidores — porque não há servidores Vexi.",privL1:"Suas chaves API são armazenadas localmente em ~/.vexi/config.json com permissões só do proprietário e nunca são enviadas a nós.",privL2:"Seu código só é enviado ao provedor IA cuja chave você fornece (ex. Groq, Gemini), sob a política daquele provedor.",privL3:"Memória e sessões são salvas localmente na pasta .vexi/ do seu projeto e nunca saem do seu dispositivo.",privL4:"Este site (vexi.pro) não usa cookies de rastreamento nem vende dados pessoais.",termsBlockH:"Termos de Uso",termsP1:"O Vexi é software livre e de código aberto sob a Licença MIT.",termsL1:"O software é fornecido \"como está\", sem garantia de qualquer tipo.",termsL2:"Você é responsável pelos custos de API cobrados pelo provedor cuja chave você usa.",termsL3:"Você é responsável por revisar quaisquer alterações de código que o Vexi fizer antes de aplicá-las.",termsL4:"O texto completo da licença está disponível no repositório do GitHub.",ctaH2:"Comece com o Vexi hoje",ctaP:"Grátis, código aberto e seu para sempre. A um comando de distância.",footTagline:"Agente de código IA de código aberto para seu terminal. Traga sua chave, sem config, 100% local.",footProduct:"Produto",footResources:"Recursos",footContact:"Contato",footDocs:"Documentação",footIssues:"Reportar bug",navFeatures2:"Recursos",navAbout2:"Sobre",navContact2:"Contato",navPrivacy2:"Privacidade",footBuilt:"Feito por"}
+};
+
+const rtlLangs=['ar'];
+function setLang(lang){
+  const dict=I18N[lang];
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.getAttribute('data-i18n');
+    if(dict[k]!==undefined) el.textContent=dict[k];
+  });
+  document.documentElement.lang=lang;
+  document.body.classList.toggle('rtl',rtlLangs.includes(lang));
+  document.documentElement.dir=rtlLangs.includes(lang)?'rtl':'ltr';
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.getAttribute('data-lang')===lang));
+}
+document.querySelectorAll('.lang-btn').forEach(btn=>btn.addEventListener('click',()=>setLang(btn.getAttribute('data-lang'))));
+
+function wireCopy(id){
+  const btn=document.getElementById(id);
+  if(!btn)return;
+  btn.addEventListener('click',()=>{
+    navigator.clipboard.writeText('npm install -g vexi-cli');
+    const orig=btn.textContent;btn.textContent='✓';
+    setTimeout(()=>btn.textContent=orig,1400);
+  });
+}
+wireCopy('copyBtn');wireCopy('copyBtn2');
+</script>
+</body>
+</html>
