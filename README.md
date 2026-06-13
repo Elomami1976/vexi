@@ -15,6 +15,7 @@ Bring your own key · Zero config · Multilingual · 100% local
 [![npm](https://img.shields.io/npm/v/vexi-cli?color=2979FF)](https://www.npmjs.com/package/vexi-cli)
 [![license](https://img.shields.io/badge/license-MIT-2979FF)](LICENSE)
 [![node](https://img.shields.io/badge/node-%E2%89%A518-2979FF)](package.json)
+[![website](https://img.shields.io/badge/website-vexi.pro-2979FF)](https://vexi.pro)
 
 **English** · [العربية](#-العربية) · [Español](#-español) · [Português](#-português) · [Français](#-français)
 
@@ -250,6 +251,7 @@ saving.
 | 3 | **Vexi Replay** (export sessions as animated HTML) · multilingual code explanation | ✅ done |
 | 4 | Visual code graph · MCP support (client **and** server mode) | ✅ done |
 | 5 | **Vexi Learn** — adapts to your personal coding style | ✅ done |
+| 6 | **Multi-language builds** — auto-executes pip, gcc, javac, cargo, gradle from chat | ✅ done |
 
 ## Why Vexi?
 
@@ -263,6 +265,7 @@ saving.
 | Persistent project memory | ✅ | partial | partial | ✅ |
 | Learns your personal coding style | ✅ from your own sessions | ❌ | ❌ | partial |
 | MCP server mode (be a tool for other agents) | ✅ | ❌ | ❌ | ❌ |
+| Builds any language (Python, Java, C, Rust, Go) | ✅ | ❌ | ✅ | ✅ |
 | License | MIT | MIT | proprietary | proprietary |
 
 Vexi **complements** tools like Claude Code instead of competing: its project memory and multilingual explanations will be exposed over MCP so any agent can use them.
