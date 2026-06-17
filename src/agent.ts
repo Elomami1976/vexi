@@ -23,6 +23,7 @@ import * as nodeRl from 'node:readline';
 import ora from 'ora';
 
 import { loadConfig, saveConfig, CONFIG_PATH, type VexiConfig } from './config.js';
+import { SnapshotManager } from './snapshots/index.js';
 import {
   createProvider,
   detectProvider,
@@ -179,6 +180,11 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
     for (const f of failed) console.log(warn(t(s.mcpFailed, { name: f.name })));
   }
 
+  // ── Snapshot engine: register this session for undo/redo ─────────────
+  const snapshotSessionId = Date.now().toString(36);
+  const snapshots = new SnapshotManager(root, snapshotSessionId);
+  await snapshots.registerAsCurrentSession().catch(() => {});
+
   // ── Session recording (Vexi Replay) — saved after every turn ─────────
   const recorder = new SessionRecorder(root, {
     project: basename(root),
@@ -290,6 +296,38 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
           }
           continue;
         }
+        case '/undo': {
+          const entry = await snapshots.undo().catch(() => null);
+          if (!entry) {
+            console.log(dim(s.undoNone) + '\n');
+          } else {
+            console.log(ok(t(s.undoDone, { files: entry.files.join(', ') })) + '\n');
+          }
+          continue;
+        }
+        case '/redo': {
+          const entry = await snapshots.redo().catch(() => null);
+          if (!entry) {
+            console.log(dim(s.redoNone) + '\n');
+          } else {
+            console.log(ok(t(s.redoDone, { files: entry.files.join(', ') })) + '\n');
+          }
+          continue;
+        }
+        case '/history': {
+          const entries = await snapshots.list().catch(() => []);
+          if (entries.length === 0) {
+            console.log(dim(s.historyNone) + '\n');
+          } else {
+            console.log(dim(s.historyHeader));
+            for (const e of entries) {
+              const time = new Date(e.at).toLocaleTimeString();
+              console.log(accent(`  ${time}`) + dim(`  ${e.files.join(', ')}`) + dim(` — ${e.label.slice(0, 60)}`));
+            }
+            console.log();
+          }
+          continue;
+        }
         default:
           console.log(warn(`Unknown command: ${cmd}`) + ' ' + dim('(/help)') + '\n');
           continue;
@@ -327,6 +365,11 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
           if (!yes) {
             history.push({ role: 'user', content: `COMMAND SKIPPED: ${cmd}` });
             continue;
+          }
+          // Silent snapshot of any files the command is about to modify
+          const filesToSnap = SnapshotManager.extractFilePaths(cmd, root);
+          if (filesToSnap.length > 0) {
+            await snapshots.takeSnapshot(filesToSnap, cmd.slice(0, 80)).catch(() => {});
           }
           const runSpinner = ora({ text: dim('running…'), spinner: 'dots' }).start();
           const { stdout, stderr, code } = await runCommand(cmd, root);

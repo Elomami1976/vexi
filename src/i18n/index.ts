@@ -63,6 +63,14 @@ export interface Strings {
   learnPreview: string; // {sessions} {signals}
   learnApplyHint: string;
   learnApplied: string; // {path}
+  undoNone: string;
+  undoDone: string;          // {files}
+  redoNone: string;
+  redoDone: string;          // {files}
+  historyNone: string;
+  historyHeader: string;
+  cleanDone: string;         // {count}
+  snapshotNoSession: string;
 }
 
 const en: Strings = {
@@ -73,7 +81,7 @@ const en: Strings = {
   detectFailed: 'Could not auto-detect the provider for this key.',
   selectProvider: 'Select your provider',
   configSaved: 'Saved to {path} (readable only by your OS user).',
-  chatHint: 'Type your message. Commands: /help /model /clear /exit',
+  chatHint: 'Type your message. Commands: /help /model /clear /undo /redo /history /exit',
   thinking: 'Thinking…',
   goodbye: 'Goodbye! 👋',
   invalidKey: 'The API key was rejected by the provider (unauthorized).',
@@ -82,7 +90,7 @@ const en: Strings = {
   emptyKey: 'No key entered.',
   historyCleared: 'Conversation history cleared.',
   helpText:
-    '/help    show this help\n/model   switch model (e.g. /model gpt-4o)\n/memory  show compressed project memory\n/clear   clear conversation history\n/exit    quit Vexi',
+    '/help     show this help\n/model    switch model (e.g. /model gpt-4o)\n/memory   show compressed project memory\n/clear    clear conversation history\n/undo     revert last AI file edit\n/redo     re-apply last undone edit\n/history  list recent AI file edits\n/exit     quit Vexi',
   modelSwitched: 'Model switched to {model}',
   configReset: 'Configuration deleted. Run `vexi` to set up again.',
   configResetNone: 'No configuration found.',
@@ -115,6 +123,14 @@ const en: Strings = {
   learnPreview: 'Learned from {sessions} sessions ({signals} corrections found):',
   learnApplyHint: 'Looks right? Save it with: vexi learn --apply',
   learnApplied: 'Learned style saved: {path} — now injected into every session.',
+  undoNone: 'Nothing to undo — no file snapshots in this session.',
+  undoDone: 'Reverted: {files}',
+  redoNone: 'Nothing to redo.',
+  redoDone: 'Re-applied: {files}',
+  historyNone: 'No file snapshots yet — make some AI edits first.',
+  historyHeader: 'Recent AI file edits (newest first):',
+  cleanDone: 'Cleaned {count} old snapshot session(s).',
+  snapshotNoSession: 'No active Vexi session found. Run `vexi` first to start a session.',
 };
 
 const es: Strings = {
@@ -167,6 +183,14 @@ const es: Strings = {
   learnPreview: 'Aprendido de {sessions} sesiones ({signals} correcciones encontradas):',
   learnApplyHint: '¿Se ve bien? Guárdalo con: vexi learn --apply',
   learnApplied: 'Estilo aprendido guardado: {path} — ahora se inyecta en cada sesión.',
+  undoNone: 'Nada que deshacer — no hay instantáneas de archivos en esta sesión.',
+  undoDone: 'Revertido: {files}',
+  redoNone: 'Nada que rehacer.',
+  redoDone: 'Reaplicado: {files}',
+  historyNone: 'Aún no hay instantáneas de archivos — haz ediciones con IA primero.',
+  historyHeader: 'Ediciones de archivos recientes de la IA (más recientes primero):',
+  cleanDone: 'Se eliminaron {count} sesión(es) de instantáneas antiguas.',
+  snapshotNoSession: 'No se encontró ninguna sesión activa de Vexi. Ejecuta `vexi` primero.',
 };
 
 const pt: Strings = {
@@ -219,6 +243,14 @@ const pt: Strings = {
   learnPreview: 'Aprendido de {sessions} sessões ({signals} correções encontradas):',
   learnApplyHint: 'Parece certo? Salve com: vexi learn --apply',
   learnApplied: 'Estilo aprendido salvo: {path} — agora é injetado em cada sessão.',
+  undoNone: 'Nada a desfazer — sem instantâneos de arquivos nesta sessão.',
+  undoDone: 'Revertido: {files}',
+  redoNone: 'Nada a refazer.',
+  redoDone: 'Reaplicado: {files}',
+  historyNone: 'Ainda não há instantâneos de arquivos — faça edições com IA primeiro.',
+  historyHeader: 'Edições de arquivos recentes da IA (mais recentes primeiro):',
+  cleanDone: 'Foram removidas {count} sessão(ões) de instantâneos antigas.',
+  snapshotNoSession: 'Nenhuma sessão ativa do Vexi encontrada. Execute `vexi` primeiro.',
 };
 
 const fr: Strings = {
@@ -271,6 +303,14 @@ const fr: Strings = {
   learnPreview: 'Appris de {sessions} sessions ({signals} corrections trouvées) :',
   learnApplyHint: 'Ça vous convient ? Enregistrez avec : vexi learn --apply',
   learnApplied: 'Style appris enregistré : {path} — désormais injecté dans chaque session.',
+  undoNone: 'Rien à annuler — aucun instantané de fichier dans cette session.',
+  undoDone: 'Rétabli : {files}',
+  redoNone: 'Rien à rétablir.',
+  redoDone: 'Réappliqué : {files}',
+  historyNone: 'Pas encore d\'instantanés de fichiers — effectuez d\'abord des modifications avec l\'IA.',
+  historyHeader: 'Modifications de fichiers récentes de l\'IA (plus récentes en premier) :',
+  cleanDone: '{count} session(s) d\'instantanés ancienne(s) supprimée(s).',
+  snapshotNoSession: 'Aucune session Vexi active trouvée. Exécutez `vexi` d\'abord.',
 };
 
 const STRINGS: Record<Lang, Strings> = {

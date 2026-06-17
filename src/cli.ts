@@ -31,6 +31,7 @@ import { loadMcpConfig, saveMcpConfig, MCP_CONFIG_PATH } from './mcp/config.js';
 import { learn, applyLearned, DEFAULT_MAX_SESSIONS } from './learn/index.js';
 import { createProvider, PROVIDER_INFO } from './providers/index.js';
 import { openInDefaultApp } from './utils/open.js';
+import { SnapshotManager } from './snapshots/index.js';
 import { detectSystemLang, getStrings, normalizeLang, t, SUPPORTED_LANGS, type Lang } from './i18n/index.js';
 import { accent, dim, err, ok } from './ui/index.js';
 
@@ -347,6 +348,75 @@ export function buildCli(): Command {
         console.error(err(e instanceof Error ? e.message : String(e)));
         process.exitCode = 1;
       }
+    });
+
+  // ── Undo / Redo / History / Clean (Feature 8) ────────────────────────
+  program
+    .command('undo')
+    .description('Revert the last AI file edit in the current session')
+    .action(async () => {
+      const s = getStrings(await resolveLang());
+      const mgr = await SnapshotManager.forCurrentSession(process.cwd());
+      if (!mgr) {
+        console.log(dim(s.snapshotNoSession));
+        return;
+      }
+      const entry = await mgr.undo().catch(() => null);
+      if (!entry) {
+        console.log(dim(s.undoNone));
+      } else {
+        console.log(ok(t(s.undoDone, { files: entry.files.join(', ') })));
+      }
+    });
+
+  program
+    .command('redo')
+    .description('Re-apply the last undone AI file edit')
+    .action(async () => {
+      const s = getStrings(await resolveLang());
+      const mgr = await SnapshotManager.forCurrentSession(process.cwd());
+      if (!mgr) {
+        console.log(dim(s.snapshotNoSession));
+        return;
+      }
+      const entry = await mgr.redo().catch(() => null);
+      if (!entry) {
+        console.log(dim(s.redoNone));
+      } else {
+        console.log(ok(t(s.redoDone, { files: entry.files.join(', ') })));
+      }
+    });
+
+  program
+    .command('history')
+    .description('List recent AI file edits in this session (with timestamps)')
+    .action(async () => {
+      const s = getStrings(await resolveLang());
+      const mgr = await SnapshotManager.forCurrentSession(process.cwd());
+      if (!mgr) {
+        console.log(dim(s.snapshotNoSession));
+        return;
+      }
+      const entries = await mgr.list().catch(() => []);
+      if (entries.length === 0) {
+        console.log(dim(s.historyNone));
+        return;
+      }
+      console.log(dim(s.historyHeader));
+      for (const e of entries) {
+        const time = new Date(e.at).toLocaleTimeString();
+        console.log(accent(`  ${time}`) + dim(`  ${e.files.join(', ')}`) + dim(` — ${e.label.slice(0, 60)}`));
+      }
+    });
+
+  program
+    .command('clean')
+    .description('Clear old snapshot sessions to free disk space (.vexi/snapshots/)')
+    .action(async () => {
+      const s = getStrings(await resolveLang());
+      const mgr = await SnapshotManager.forCurrentSession(process.cwd());
+      const count = await SnapshotManager.cleanAll(process.cwd(), mgr?.sessionId);
+      console.log(ok(t(s.cleanDone, { count: String(count) })));
     });
 
   return program;
