@@ -79,16 +79,23 @@ vexi mcp list               # manage external MCP servers
 vexi --mcp-server           # expose Vexi as an MCP server (stdio)
 vexi learn                  # learn your coding style from past sessions
 vexi learn --apply          # save it as a skill (injected in every session)
+vexi undo                   # revert the last AI file edit
+vexi redo                   # re-apply a reverted edit
+vexi history                # list recent AI file edits with timestamps
+vexi clean                  # clear old snapshots (.vexi/snapshots/)
 ```
 
 Inside the chat:
 
 ```
-/help    show available commands
-/model   switch model (e.g. /model gpt-4o)
-/memory  show compressed project memory
-/clear   clear conversation history
-/exit    quit
+/help     show available commands
+/model    switch model (e.g. /model gpt-4o)
+/memory   show compressed project memory
+/clear    clear conversation history
+/undo     revert last AI file edit
+/redo     re-apply last undone edit
+/history  list recent AI file edits
+/exit     quit
 ```
 
 ## ⚙️ Multi-language build support
@@ -242,6 +249,29 @@ session, so you stop repeating yourself. Everything stays local — the only
 network call is to your own model provider, and you always preview before
 saving.
 
+## ↩️ Undo / Redo — instant rescue from any AI edit
+
+> Approve a change, see it break things, type `vexi undo`. Done.
+
+```bash
+vexi undo      # revert the last AI-applied file change
+vexi redo      # re-apply a reverted change
+vexi history   # list every file edit this session, with timestamps
+vexi clean     # remove old snapshot sessions to free disk space
+```
+
+Or use the in-chat shortcuts without leaving the session: `/undo`, `/redo`, `/history`.
+
+**How it works (lightweight snapshot design):**
+
+- Before executing any confirmed shell command, Vexi inspects it for file-write patterns (`cat >`, `sed -i`, `mv`, `cp`, `tee`, `writeFileSync`, PowerShell `Set-Content`, and bare source-file tokens) and saves a copy of **only the affected files** into `.vexi/snapshots/<session>/`.
+- `undo` restores the pre-command copy and saves the current state as a redo point — so you can bounce back and forth freely.
+- Each session keeps a maximum of 50 snapshots; the oldest are pruned automatically.
+- Snapshots are **per-file, not per-project** — no full-tree indexing, no slow startup, no huge disk usage (the approach OpenCode's whole-tree snapshot system suffers from).
+- `vexi clean` wipes all previous sessions' snapshots while keeping the current one active.
+
+This pairs naturally with the confirmation prompt: even if you approve a change that turns out to be wrong, one command gets you back.
+
 ## Roadmap
 
 | Phase | Feature | Status |
@@ -252,6 +282,7 @@ saving.
 | 4 | Visual code graph · MCP support (client **and** server mode) | ✅ done |
 | 5 | **Vexi Learn** — adapts to your personal coding style | ✅ done |
 | 6 | **Multi-language builds** — auto-executes pip, gcc, javac, cargo, gradle from chat | ✅ done |
+| 7 | **Undo / Redo** — instant one-command revert of any AI file edit, without touching git | ✅ done |
 
 ## Why Vexi?
 
@@ -266,6 +297,7 @@ saving.
 | Learns your personal coding style | ✅ from your own sessions | ❌ | ❌ | partial |
 | MCP server mode (be a tool for other agents) | ✅ | ❌ | ❌ | ❌ |
 | Builds any language (Python, Java, C, Rust, Go) | ✅ | ❌ | ✅ | ✅ |
+| Instant undo/redo of AI edits (no git required) | ✅ per-file snapshots | ❌ | ❌ | ❌ |
 | License | MIT | MIT | proprietary | proprietary |
 
 Vexi **complements** tools like Claude Code instead of competing: its project memory and multilingual explanations will be exposed over MCP so any agent can use them.
@@ -295,6 +327,7 @@ src/
 ├── graph/          dependency graph + interactive d3 visualization
 ├── mcp/            MCP client (tools in chat) + server mode
 ├── learn/          Vexi Learn — style mining from your own sessions
+├── snapshots/      undo/redo engine — per-file backups before AI edits
 ├── i18n/           5-language UI strings + RTL strategy
 ├── ui/             terminal branding (chalk, ora)
 └── utils/          atomic JSON writes, cross-platform open
