@@ -75,7 +75,7 @@ export interface Strings {
 
 const en: Strings = {
   welcome: 'Welcome to Vexi — your AI coding agent in the terminal.',
-  firstRunIntro: 'First run: Vexi needs an API key (Anthropic, OpenAI, OpenRouter, Groq or Gemini).\nIt is stored locally in ~/.vexi/config.json — no login, no server, no telemetry.',
+  firstRunIntro: 'First run: Vexi needs an API key.\nSupported (several are free): Anthropic · OpenAI · OpenRouter · Groq · Gemini · GLM · Mistral · Cerebras\nStored locally in ~/.vexi/config.json — no login, no server, no telemetry.',
   enterApiKey: 'Paste your API key',
   detectedProvider: 'Provider detected: {provider}',
   detectFailed: 'Could not auto-detect the provider for this key.',
@@ -135,7 +135,7 @@ const en: Strings = {
 
 const es: Strings = {
   welcome: 'Bienvenido a Vexi — tu agente de programación con IA en la terminal.',
-  firstRunIntro: 'Primer uso: Vexi necesita una clave API (Anthropic, OpenAI, OpenRouter, Groq o Gemini).\nSe guarda localmente en ~/.vexi/config.json — sin registro, sin servidor, sin telemetría.',
+  firstRunIntro: 'Primer uso: Vexi necesita una clave API.\nCompatibles (varios son gratuitos): Anthropic · OpenAI · OpenRouter · Groq · Gemini · GLM · Mistral · Cerebras\nGuardada en ~/.vexi/config.json — sin registro, sin servidor, sin telemetría.',
   enterApiKey: 'Pega tu clave API',
   detectedProvider: 'Proveedor detectado: {provider}',
   detectFailed: 'No se pudo detectar automáticamente el proveedor de esta clave.',
@@ -195,7 +195,7 @@ const es: Strings = {
 
 const pt: Strings = {
   welcome: 'Bem-vindo ao Vexi — seu agente de programação com IA no terminal.',
-  firstRunIntro: 'Primeira execução: o Vexi precisa de uma chave de API (Anthropic, OpenAI, OpenRouter, Groq ou Gemini).\nEla é guardada localmente em ~/.vexi/config.json — sem login, sem servidor, sem telemetria.',
+  firstRunIntro: 'Primeira execução: o Vexi precisa de uma chave de API.\nCompatíveis (vários gratuitos): Anthropic · OpenAI · OpenRouter · Groq · Gemini · GLM · Mistral · Cerebras\nGuardada em ~/.vexi/config.json — sem login, sem servidor, sem telemetria.',
   enterApiKey: 'Cole sua chave de API',
   detectedProvider: 'Provedor detectado: {provider}',
   detectFailed: 'Não foi possível detectar automaticamente o provedor desta chave.',
@@ -255,7 +255,7 @@ const pt: Strings = {
 
 const fr: Strings = {
   welcome: 'Bienvenue dans Vexi — votre agent de codage IA dans le terminal.',
-  firstRunIntro: 'Première utilisation : Vexi a besoin d\'une clé API (Anthropic, OpenAI, OpenRouter, Groq ou Gemini).\nElle est stockée localement dans ~/.vexi/config.json — sans compte, sans serveur, sans télémétrie.',
+  firstRunIntro: 'Première utilisation : Vexi a besoin d\'une clé API.\nCompatibles (plusieurs gratuits) : Anthropic · OpenAI · OpenRouter · Groq · Gemini · GLM · Mistral · Cerebras\nStockée dans ~/.vexi/config.json — sans compte, sans serveur, sans télémétrie.',
   enterApiKey: 'Collez votre clé API',
   detectedProvider: 'Fournisseur détecté : {provider}',
   detectFailed: 'Impossible de détecter automatiquement le fournisseur de cette clé.',

@@ -35,7 +35,7 @@ import { SnapshotManager } from './snapshots/index.js';
 import { detectSystemLang, getStrings, normalizeLang, t, SUPPORTED_LANGS, type Lang } from './i18n/index.js';
 import { accent, dim, err, ok } from './ui/index.js';
 
-export const VERSION = '0.5.5';
+export const VERSION = '0.6.0';
 
 /** Resolve the active language: --lang flag > saved config > system locale. */
 async function resolveLang(flag?: string): Promise<Lang> {

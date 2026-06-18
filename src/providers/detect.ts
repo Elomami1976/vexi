@@ -22,11 +22,13 @@ export const PROVIDER_PATTERNS: ReadonlyArray<{ provider: ProviderId; pattern: R
   { provider: 'groq',      pattern: /^gsk_/ },
   { provider: 'gemini',    pattern: /^AIza/ },
   { provider: 'cerebras',  pattern: /^csk-/ },
+  // Zhipu AI (GLM): key format is <32-char-hex>.<alphanumeric>
+  // e.g. b277fbf3dc1045c79229ff3c65a6f89b.fZ3rWjaTnH6UW6rm
+  { provider: 'glm',       pattern: /^[0-9a-f]{32}\.[A-Za-z0-9]+$/ },
   // OpenAI: classic `sk-...` and new project keys `sk-proj-...`,
   // excluding the Anthropic / OpenRouter / Cerebras prefixes above.
   { provider: 'openai', pattern: /^sk-(?!ant-|or-)/ },
-  // GLM keys from bigmodel.cn are long alphanumeric strings (no unique prefix).
-  // Mistral keys are also unstructured. Both fall back to manual selection.
+  // Mistral keys are unstructured — fall back to manual selection.
 ];
 
 /**
