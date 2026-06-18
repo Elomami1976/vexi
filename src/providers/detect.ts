@@ -17,18 +17,31 @@ import type { ProviderId } from './types.js';
  * interactive fallback.
  */
 export const PROVIDER_PATTERNS: ReadonlyArray<{ provider: ProviderId; pattern: RegExp }> = [
-  { provider: 'anthropic', pattern: /^sk-ant-/ },
+  // ── Distinctive prefixes (safe auto-detect) ───────────────────────────
+  { provider: 'anthropic',  pattern: /^sk-ant-/ },
   { provider: 'openrouter', pattern: /^sk-or-/ },
-  { provider: 'groq',      pattern: /^gsk_/ },
-  { provider: 'gemini',    pattern: /^AIza/ },
-  { provider: 'cerebras',  pattern: /^csk-/ },
-  // Zhipu AI (GLM): key format is <32-char-hex>.<alphanumeric>
+  { provider: 'groq',       pattern: /^gsk_/ },
+  { provider: 'gemini',     pattern: /^AIza/ },
+  { provider: 'cerebras',   pattern: /^csk-/ },
+  // Zhipu AI (GLM): <32-char-lowercase-hex>.<alphanumeric>
   // e.g. b277fbf3dc1045c79229ff3c65a6f89b.fZ3rWjaTnH6UW6rm
-  { provider: 'glm',       pattern: /^[0-9a-f]{32}\.[A-Za-z0-9]+$/ },
-  // OpenAI: classic `sk-...` and new project keys `sk-proj-...`,
-  // excluding the Anthropic / OpenRouter / Cerebras prefixes above.
-  { provider: 'openai', pattern: /^sk-(?!ant-|or-)/ },
-  // Mistral keys are unstructured — fall back to manual selection.
+  { provider: 'glm',        pattern: /^[0-9a-f]{32}\.[A-Za-z0-9]+$/ },
+
+  // ── OpenAI project keys (`sk-proj-...`) are distinctive ───────────────
+  { provider: 'openai',     pattern: /^sk-proj-/ },
+
+  // ── Ambiguous `sk-` prefix ────────────────────────────────────────────
+  // DeepSeek and Moonshot (Kimi) also start with `sk-`, just like classic
+  // OpenAI keys. Matching both patterns makes detectProvider() return null
+  // (ambiguous) so the user gets the interactive provider-selection prompt
+  // instead of silently mis-routing to the wrong API.
+  { provider: 'deepseek',   pattern: /^sk-[a-z0-9]{32}$/ },   // sk- + 32 lowercase alphanum
+  { provider: 'moonshot',   pattern: /^sk-[A-Za-z0-9]{43,}$/ }, // sk- + 43+ mixed alphanum
+  // Classic OpenAI keys (`sk-` without `proj-`, not matching deepseek/moonshot shapes):
+  { provider: 'openai',     pattern: /^sk-(?!proj-|ant-|or-)/ },
+
+  // Qwen (DashScope), Mistral, MiniMax have no distinctive key prefix →
+  // they always fall back to the interactive provider-selection list.
 ];
 
 /**

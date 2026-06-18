@@ -36,33 +36,47 @@ That's it. No login, no signup, no server, no database. Everything runs locally.
 
 On first run, paste any API key. Vexi **auto-detects the provider** from the key format:
 
-| Key prefix          | Provider                        | Free tier? |
-| ------------------- | ------------------------------- | ---------- |
-| `sk-ant-...`        | Anthropic (Claude)              | —          |
-| `sk-or-...`         | OpenRouter                      | ✅ free models available |
-| `gsk_...`           | Groq                            | ✅ free     |
-| `AIza...`           | Google Gemini                   | ✅ free     |
-| `csk-...`           | Cerebras                        | ✅ free     |
-| `sk-...` / `sk-proj-...` | OpenAI                   | —          |
-| *(any)*             | Zhipu AI — GLM *(manual select)*| ✅ free     |
-| *(any)*             | Mistral AI *(manual select)*    | ✅ free tier |
+| Key prefix | Provider | Auto-detect? | Free tier? |
+| ---------- | -------- | ------------ | ---------- |
+| `sk-ant-...` | Anthropic (Claude) | ✅ | — |
+| `sk-or-...` | OpenRouter | ✅ | ✅ free models |
+| `gsk_...` | Groq | ✅ | ✅ free |
+| `AIza...` | Google Gemini | ✅ | ✅ free |
+| `csk-...` | Cerebras | ✅ | ✅ free |
+| `<32-hex>.<secret>` | Zhipu AI — GLM | ✅ | ✅ free |
+| `sk-proj-...` | OpenAI | ✅ | — |
+| `sk-...` *(classic)* | OpenAI / DeepSeek / Kimi — pick manually | manual select | DeepSeek ✅ / Kimi ✅ |
+| *(any)* | Qwen · Mistral · MiniMax | manual select | ✅ free |
 
-If detection is ambiguous, Vexi simply asks you to pick the provider. Your key is stored **locally** in `~/.vexi/config.json` with owner-only file permissions (`chmod 600`).
+> **Tip:** If Vexi guesses the wrong provider, run `vexi config reset`, paste your key again, and pick from the list.
+
+Your key is stored **locally** in `~/.vexi/config.json` with owner-only file permissions (`chmod 600`).
 
 ### 🆓 Start for free — no credit card needed
 
-| Provider | Sign-up URL | Free model | Speed |
-| -------- | ----------- | ---------- | ----- |
-| **Groq** | [console.groq.com](https://console.groq.com) | Llama 3.3 70B | ⚡ very fast |
+**International:**
+
+| Provider | Sign-up | Free model | Speed |
+| -------- | ------- | ---------- | ----- |
+| **Groq** | [console.groq.com](https://console.groq.com) | Llama 3.3 70B | ⚡⚡ very fast |
 | **Google Gemini** | [aistudio.google.com](https://aistudio.google.com) | Gemini 2.5 Flash | ⚡ fast |
-| **Cerebras** | [cloud.cerebras.ai](https://cloud.cerebras.ai) | Llama 3.3 70B | ⚡⚡ fastest |
-| **Zhipu AI (GLM)** | [bigmodel.cn](https://bigmodel.cn) | GLM-4-Flash | ✅ free |
+| **Cerebras** | [cloud.cerebras.ai](https://cloud.cerebras.ai) | Llama 3.3 70B | ⚡⚡⚡ fastest |
 | **OpenRouter** | [openrouter.ai](https://openrouter.ai) | many free models | varies |
+
+**Chinese AI (all free tier, great quality):**
+
+| Provider | Sign-up | Free model | Notes |
+| -------- | ------- | ---------- | ----- |
+| **DeepSeek** | [platform.deepseek.com](https://platform.deepseek.com) | deepseek-chat (V3) | excellent coder |
+| **Zhipu AI — GLM** | [bigmodel.cn](https://bigmodel.cn) | glm-4-flash | auto-detected |
+| **Alibaba Qwen** | [dashscope.console.aliyun.com](https://dashscope.console.aliyun.com) | qwen-turbo | manual select |
+| **Kimi (Moonshot)** | [platform.moonshot.cn](https://platform.moonshot.cn) | moonshot-v1-8k | manual select |
+| **MiniMax** | [platform.minimaxi.com](https://platform.minimaxi.com) | MiniMax-Text-01 | manual select |
 
 To switch provider at any time:
 ```bash
 vexi config reset   # wipe the stored key
-vexi                # restart — prompts for a new key (auto-detects provider)
+vexi                # restart — prompts for a new key
 ```
 
 ## Multilingual
@@ -308,7 +322,7 @@ This pairs naturally with the confirmation prompt: even if you approve a change 
 | | Vexi | OpenCode | Claude Code | Cursor |
 | --- | --- | --- | --- | --- |
 | Install | `npm i -g vexi-cli` | binary/script | `npm i -g` | desktop app |
-| BYOK (any provider) | ✅ 8 providers, auto-detect | ✅ | ❌ Anthropic only | partial |
+| BYOK (any provider) | ✅ 12 providers incl. Chinese AI | ✅ | ❌ Anthropic only | partial |
 | Works fully offline/local | ✅ no server, no account | ✅ | ❌ account | ❌ account |
 | Native-language code explanations | ✅ ar/es/pt/fr | ❌ | ❌ | ❌ |
 | Session replay export | ✅ | ❌ | ❌ | ❌ |

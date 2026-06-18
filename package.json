@@ -1,6 +1,6 @@
 {
   "name": "vexi-cli",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Open-source AI coding agent for your terminal. Bring your own key, zero config, multilingual.",
   "type": "module",
   "bin": {

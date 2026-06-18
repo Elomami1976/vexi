@@ -14,13 +14,19 @@ export type { ChatMessage, Provider, ProviderId } from './types.js';
 
 /** Base URLs for the OpenAI-compatible providers. */
 const BASE_URLS: Partial<Record<ProviderId, string>> = {
+  // ── International ────────────────────────────────────────────────────
   openai:    'https://api.openai.com/v1',
   openrouter:'https://openrouter.ai/api/v1',
   groq:      'https://api.groq.com/openai/v1',
-  gemini:    'https://generativelanguage.googleapis.com/v1beta/openai', // Gemini's OpenAI-compat endpoint
-  glm:       'https://open.bigmodel.cn/api/paas/v4',                   // Zhipu AI (GLM-4-Flash free)
-  mistral:   'https://api.mistral.ai/v1',                              // Mistral (free tier available)
-  cerebras:  'https://api.cerebras.ai/v1',                             // Cerebras (free, very fast)
+  gemini:    'https://generativelanguage.googleapis.com/v1beta/openai',
+  mistral:   'https://api.mistral.ai/v1',
+  cerebras:  'https://api.cerebras.ai/v1',
+  // ── Chinese AI ───────────────────────────────────────────────────────
+  glm:       'https://open.bigmodel.cn/api/paas/v4',           // Zhipu AI — GLM-4-Flash free
+  deepseek:  'https://api.deepseek.com/v1',                    // DeepSeek V3 — very cheap, free credits
+  qwen:      'https://dashscope-intl.aliyuncs.com/compatible-mode/v1', // Alibaba Qwen — international
+  moonshot:  'https://api.moonshot.cn/v1',                     // Kimi — free quota on signup
+  minimax:   'https://api.minimax.chat/v1',                    // MiniMax-Text-01 — free tier
 };
 
 export function createProvider(id: ProviderId, apiKey: string, model?: string): Provider {

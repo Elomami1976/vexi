@@ -75,7 +75,7 @@ export interface Strings {
 
 const en: Strings = {
   welcome: 'Welcome to Vexi — your AI coding agent in the terminal.',
-  firstRunIntro: 'First run: Vexi needs an API key.\nSupported (several are free): Anthropic · OpenAI · OpenRouter · Groq · Gemini · GLM · Mistral · Cerebras\nStored locally in ~/.vexi/config.json — no login, no server, no telemetry.',
+  firstRunIntro: 'First run: Vexi needs an API key.\nSupported: Anthropic · OpenAI · OpenRouter · Groq · Gemini · GLM · Mistral · Cerebras · DeepSeek · Qwen · Kimi · MiniMax\nIf auto-detection picks the wrong provider, just re-enter your key and select from the list.\nStored locally in ~/.vexi/config.json — no login, no server, no telemetry.',
   enterApiKey: 'Paste your API key',
   detectedProvider: 'Provider detected: {provider}',
   detectFailed: 'Could not auto-detect the provider for this key.',
