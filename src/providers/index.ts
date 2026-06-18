@@ -14,11 +14,13 @@ export type { ChatMessage, Provider, ProviderId } from './types.js';
 
 /** Base URLs for the OpenAI-compatible providers. */
 const BASE_URLS: Partial<Record<ProviderId, string>> = {
-  openai: 'https://api.openai.com/v1',
-  openrouter: 'https://openrouter.ai/api/v1',
-  groq: 'https://api.groq.com/openai/v1',
-  // Gemini's OpenAI-compatibility endpoint
-  gemini: 'https://generativelanguage.googleapis.com/v1beta/openai',
+  openai:    'https://api.openai.com/v1',
+  openrouter:'https://openrouter.ai/api/v1',
+  groq:      'https://api.groq.com/openai/v1',
+  gemini:    'https://generativelanguage.googleapis.com/v1beta/openai', // Gemini's OpenAI-compat endpoint
+  glm:       'https://open.bigmodel.cn/api/paas/v4',                   // Zhipu AI (GLM-4-Flash free)
+  mistral:   'https://api.mistral.ai/v1',                              // Mistral (free tier available)
+  cerebras:  'https://api.cerebras.ai/v1',                             // Cerebras (free, very fast)
 };
 
 export function createProvider(id: ProviderId, apiKey: string, model?: string): Provider {

@@ -19,11 +19,14 @@ import type { ProviderId } from './types.js';
 export const PROVIDER_PATTERNS: ReadonlyArray<{ provider: ProviderId; pattern: RegExp }> = [
   { provider: 'anthropic', pattern: /^sk-ant-/ },
   { provider: 'openrouter', pattern: /^sk-or-/ },
-  { provider: 'groq', pattern: /^gsk_/ },
-  { provider: 'gemini', pattern: /^AIza/ },
+  { provider: 'groq',      pattern: /^gsk_/ },
+  { provider: 'gemini',    pattern: /^AIza/ },
+  { provider: 'cerebras',  pattern: /^csk-/ },
   // OpenAI: classic `sk-...` and new project keys `sk-proj-...`,
-  // excluding the Anthropic / OpenRouter prefixes above.
+  // excluding the Anthropic / OpenRouter / Cerebras prefixes above.
   { provider: 'openai', pattern: /^sk-(?!ant-|or-)/ },
+  // GLM keys from bigmodel.cn are long alphanumeric strings (no unique prefix).
+  // Mistral keys are also unstructured. Both fall back to manual selection.
 ];
 
 /**

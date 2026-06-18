@@ -2,7 +2,7 @@
  * Shared types for AI providers.
  */
 
-export type ProviderId = 'anthropic' | 'openai' | 'openrouter' | 'groq' | 'gemini';
+export type ProviderId = 'anthropic' | 'openai' | 'openrouter' | 'groq' | 'gemini' | 'glm' | 'mistral' | 'cerebras';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -37,10 +37,13 @@ export class ProviderError extends Error {
 }
 
 /** Human-friendly provider metadata. */
-export const PROVIDER_INFO: Record<ProviderId, { label: string; defaultModel: string }> = {
-  anthropic: { label: 'Anthropic (Claude)', defaultModel: 'claude-sonnet-4-5' },
-  openai: { label: 'OpenAI (GPT)', defaultModel: 'gpt-4o-mini' },
-  openrouter: { label: 'OpenRouter', defaultModel: 'openrouter/auto' },
-  groq: { label: 'Groq', defaultModel: 'llama-3.3-70b-versatile' },
-  gemini: { label: 'Google Gemini', defaultModel: 'gemini-2.5-flash' },
+export const PROVIDER_INFO: Record<ProviderId, { label: string; defaultModel: string; free?: true }> = {
+  anthropic: { label: 'Anthropic (Claude)',          defaultModel: 'claude-sonnet-4-5' },
+  openai:    { label: 'OpenAI (GPT)',                defaultModel: 'gpt-4o-mini' },
+  openrouter:{ label: 'OpenRouter',                  defaultModel: 'openrouter/auto' },
+  groq:      { label: 'Groq (free tier)',             defaultModel: 'llama-3.3-70b-versatile', free: true },
+  gemini:    { label: 'Google Gemini (free tier)',    defaultModel: 'gemini-2.5-flash',         free: true },
+  glm:       { label: 'Zhipu AI — GLM (free tier)',  defaultModel: 'glm-4-flash',              free: true },
+  mistral:   { label: 'Mistral AI',                  defaultModel: 'mistral-small-latest' },
+  cerebras:  { label: 'Cerebras (free tier)',         defaultModel: 'llama-3.3-70b',            free: true },
 };

@@ -36,15 +36,34 @@ That's it. No login, no signup, no server, no database. Everything runs locally.
 
 On first run, paste any API key. Vexi **auto-detects the provider** from the key format:
 
-| Key prefix          | Provider          |
-| ------------------- | ----------------- |
-| `sk-ant-...`        | Anthropic (Claude)|
-| `sk-or-...`         | OpenRouter        |
-| `gsk_...`           | Groq              |
-| `AIza...`           | Google Gemini     |
-| `sk-...` / `sk-proj-...` | OpenAI       |
+| Key prefix          | Provider                        | Free tier? |
+| ------------------- | ------------------------------- | ---------- |
+| `sk-ant-...`        | Anthropic (Claude)              | —          |
+| `sk-or-...`         | OpenRouter                      | ✅ free models available |
+| `gsk_...`           | Groq                            | ✅ free     |
+| `AIza...`           | Google Gemini                   | ✅ free     |
+| `csk-...`           | Cerebras                        | ✅ free     |
+| `sk-...` / `sk-proj-...` | OpenAI                   | —          |
+| *(any)*             | Zhipu AI — GLM *(manual select)*| ✅ free     |
+| *(any)*             | Mistral AI *(manual select)*    | ✅ free tier |
 
 If detection is ambiguous, Vexi simply asks you to pick the provider. Your key is stored **locally** in `~/.vexi/config.json` with owner-only file permissions (`chmod 600`).
+
+### 🆓 Start for free — no credit card needed
+
+| Provider | Sign-up URL | Free model | Speed |
+| -------- | ----------- | ---------- | ----- |
+| **Groq** | [console.groq.com](https://console.groq.com) | Llama 3.3 70B | ⚡ very fast |
+| **Google Gemini** | [aistudio.google.com](https://aistudio.google.com) | Gemini 2.5 Flash | ⚡ fast |
+| **Cerebras** | [cloud.cerebras.ai](https://cloud.cerebras.ai) | Llama 3.3 70B | ⚡⚡ fastest |
+| **Zhipu AI (GLM)** | [bigmodel.cn](https://bigmodel.cn) | GLM-4-Flash | ✅ free |
+| **OpenRouter** | [openrouter.ai](https://openrouter.ai) | many free models | varies |
+
+To switch provider at any time:
+```bash
+vexi config reset   # wipe the stored key
+vexi                # restart — prompts for a new key (auto-detects provider)
+```
 
 ## Multilingual
 
@@ -289,7 +308,7 @@ This pairs naturally with the confirmation prompt: even if you approve a change 
 | | Vexi | OpenCode | Claude Code | Cursor |
 | --- | --- | --- | --- | --- |
 | Install | `npm i -g vexi-cli` | binary/script | `npm i -g` | desktop app |
-| BYOK (any provider) | ✅ 5 providers, auto-detect | ✅ | ❌ Anthropic only | partial |
+| BYOK (any provider) | ✅ 8 providers, auto-detect | ✅ | ❌ Anthropic only | partial |
 | Works fully offline/local | ✅ no server, no account | ✅ | ❌ account | ❌ account |
 | Native-language code explanations | ✅ ar/es/pt/fr | ❌ | ❌ | ❌ |
 | Session replay export | ✅ | ❌ | ❌ | ❌ |
