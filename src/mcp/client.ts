@@ -10,6 +10,8 @@
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { z } from 'zod';
+import { VERSION } from '../version.js';
 import { loadMcpConfig } from './config.js';
 
 export interface McpTool {
@@ -42,7 +44,7 @@ export class McpManager {
           env: { ...(process.env as Record<string, string>), ...server.env },
           stderr: 'ignore',
         });
-        const client = new Client({ name: 'vexi', version: '0.5.0' });
+        const client = new Client({ name: 'vexi', version: VERSION });
         await client.connect(transport);
 
         const { tools } = await client.listTools();
@@ -63,12 +65,17 @@ export class McpManager {
     return { connected, failed };
   }
 
+  private static readonly ArgsSchema = z.record(z.string(), z.unknown());
+
   /** Call a tool on a connected server; returns the text result. */
   async callTool(server: string, tool: string, args: Record<string, unknown>): Promise<string> {
     const connection = this.connections.find((c) => c.name === server);
     if (!connection) throw new Error(`MCP server "${server}" is not connected.`);
 
-    const result = await connection.client.callTool({ name: tool, arguments: args });
+    const parsed = McpManager.ArgsSchema.safeParse(args);
+    if (!parsed.success) throw new Error(`Invalid tool arguments: ${parsed.error.message}`);
+
+    const result = await connection.client.callTool({ name: tool, arguments: parsed.data });
     const content = Array.isArray(result.content) ? result.content : [];
     const text = content
       .map((c: { type: string; text?: string }) => (c.type === 'text' ? (c.text ?? '') : `[${c.type}]`))

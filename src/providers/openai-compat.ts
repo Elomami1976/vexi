@@ -8,14 +8,15 @@
  */
 
 import { ProviderError } from './types.js';
-import type { ChatMessage, Provider, ProviderId } from './types.js';
+import type { ChatMessage, Provider } from './types.js';
 
 interface OpenAICompatOptions {
-  id: ProviderId;
+  id: string;
   baseUrl: string;
   apiKey: string;
   model: string;
   extraHeaders?: Record<string, string>;
+  extraBody?: Record<string, unknown>;
 }
 
 export function createOpenAICompatProvider(opts: OpenAICompatOptions): Provider {
@@ -35,6 +36,7 @@ export function createOpenAICompatProvider(opts: OpenAICompatOptions): Provider 
           model: opts.model,
           messages,
           stream: true,
+          ...opts.extraBody,
         }),
       }).catch((err: Error) => {
         throw new ProviderError(`Network error: ${err.message}`);

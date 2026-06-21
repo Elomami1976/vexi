@@ -16,7 +16,7 @@
  */
 
 import { basename } from 'node:path';
-import { platform, EOL } from 'node:os';
+import { platform } from 'node:os';
 import { exec as cpExec } from 'node:child_process';
 import { input, select, confirm } from '@inquirer/prompts';
 import * as nodeRl from 'node:readline';
@@ -25,13 +25,12 @@ import ora from 'ora';
 import { loadConfig, saveConfig, CONFIG_PATH, type VexiConfig } from './config.js';
 import { SnapshotManager } from './snapshots/index.js';
 import {
-  createProvider,
+  createProviderFromConfig,
   detectProvider,
   sanitizeKey,
   PROVIDER_INFO,
   ProviderError,
   type ChatMessage,
-  type Provider,
   type ProviderId,
 } from './providers/index.js';
 import { scanProject, projectSummary, type ProjectMap } from './scanner/index.js';
@@ -49,11 +48,13 @@ import { SessionRecorder } from './replay/recorder.js';
 import { McpManager, parseToolCall } from './mcp/client.js';
 import { loadMcpConfig } from './mcp/config.js';
 import { ARABIC_RTL_NOTE, getStrings, t, type Lang, type Strings } from './i18n/index.js';
+import { gitPush } from './git/index.js';
 import { accent, dim, err, ok, printBanner, printStatusLine, userPrompt, vexiLabel, warn } from './ui/index.js';
 
 interface AgentOptions {
   lang: Lang;
   version: string;
+  updateCheckPromise?: Promise<string | null>;
 }
 
 /** Extract shell commands from fenced code blocks in an AI reply. */
@@ -152,7 +153,7 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
     await saveConfig(config);
   }
 
-  let provider = createProvider(config.provider, config.apiKey, config.model);
+  let provider = createProviderFromConfig(config);
   const root = process.cwd();
 
   // ── Full project understanding: scan + load memory + load skills ──────
@@ -186,9 +187,11 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
   await snapshots.registerAsCurrentSession().catch(() => {});
 
   // ── Session recording (Vexi Replay) — saved after every turn ─────────
+  const providerLabel = config.displayName ?? PROVIDER_INFO[config.provider as ProviderId]?.label ?? config.provider;
+
   const recorder = new SessionRecorder(root, {
     project: basename(root),
-    provider: PROVIDER_INFO[config.provider].label,
+    provider: providerLabel,
     model: provider.model,
     lang: opts.lang,
   });
@@ -197,7 +200,7 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
     project: project?.stack.length
       ? `${basename(root)} (${project.stack.slice(0, 4).join(', ')})`
       : basename(root),
-    provider: PROVIDER_INFO[config.provider].label,
+    provider: providerLabel,
     model: provider.model,
     lang: opts.lang,
   });
@@ -208,6 +211,18 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
   if (skills.length > 0) {
     console.log(dim(t(s.skillsLoaded, { names: skills.map((sk) => sk.name).join(', ') })));
   }
+
+  // Peek at the update check (only picks up already-resolved results; never blocks)
+  const latestVersion = opts.updateCheckPromise
+    ? await Promise.race([
+        opts.updateCheckPromise,
+        new Promise<null>((r) => setTimeout(() => r(null), 0)),
+      ])
+    : null;
+  if (latestVersion) {
+    console.log(dim(`Update available: ${opts.version} -> ${latestVersion}   run: npm install -g vexi-cli@latest`));
+  }
+
   console.log(dim(s.chatHint) + '\n');
 
   // ── Chat loop ────────────────────────────────────────────────────────
@@ -232,14 +247,18 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
    */
   const maybeCompress = (): void => {
     if (compressing || history.length < KEEP_RECENT + COMPRESS_INTERVAL) return;
-    const archived = history.splice(0, history.length - KEEP_RECENT);
+    // Slice (not splice) — do NOT mutate history before we know compression succeeded.
+    const archiveCount = history.length - KEEP_RECENT;
+    const archived = history.slice(0, archiveCount);
     compressing = true;
     compressIntoMemory(provider, memory, archived)
       .then(async (updated) => {
+        // Only remove from history after a successful archive write.
+        history.splice(0, archiveCount);
         memory = updated;
         await saveMemory(root, updated);
       })
-      .catch(() => {}) // compression must never break the chat
+      .catch(() => {}) // history intact on failure — retries next turn
       .finally(() => {
         compressing = false;
       });
@@ -289,7 +308,7 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
           if (model) {
             config.model = model;
             await saveConfig(config);
-            provider = createProvider(config.provider, config.apiKey, model);
+            provider = createProviderFromConfig(config);
             console.log(ok(t(s.modelSwitched, { model })) + '\n');
           } else {
             console.log(dim(`model: ${provider.model}`) + '\n');
@@ -326,6 +345,21 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
             }
             console.log();
           }
+          continue;
+        }
+        case '/push': {
+          const firstArg = rest[0] ?? '';
+          const pushOnly = firstArg === '--only';
+          const message = pushOnly || rest.length === 0 ? undefined : rest.join(' ').trim() || undefined;
+          await gitPush({
+            cwd: root,
+            run: runCommand,
+            confirm: (m) => confirm({ message: m, default: true }).catch(() => false),
+            provider,
+            message,
+            pushOnly,
+          });
+          console.log();
           continue;
         }
         default:
@@ -420,7 +454,7 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
         const retry = await confirm({ message: s.reenterKey, default: true }).catch(() => false);
         if (retry) {
           config = await firstRunSetup(s, opts.lang);
-          provider = createProvider(config.provider, config.apiKey, config.model);
+          provider = createProviderFromConfig(config);
         }
       } else {
         const message = e instanceof Error ? e.message : String(e);

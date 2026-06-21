@@ -7,6 +7,7 @@ import type { Provider, ProviderId } from './types.js';
 import { PROVIDER_INFO } from './types.js';
 import { createAnthropicProvider } from './anthropic.js';
 import { createOpenAICompatProvider } from './openai-compat.js';
+import type { VexiConfig } from '../config.js';
 
 export { detectProvider, sanitizeKey, PROVIDER_PATTERNS } from './detect.js';
 export { PROVIDER_INFO, ProviderError } from './types.js';
@@ -38,11 +39,7 @@ export function createProvider(id: ProviderId, apiKey: string, model?: string): 
 
   const extraHeaders: Record<string, string> | undefined =
     id === 'openrouter'
-      ? {
-          // OpenRouter attribution headers (optional but recommended)
-          'HTTP-Referer': 'https://github.com/Elomami1976/vexi',
-          'X-Title': 'Vexi',
-        }
+      ? { 'HTTP-Referer': 'https://vexi.pro', 'X-Title': 'Vexi' }
       : undefined;
 
   return createOpenAICompatProvider({
@@ -51,5 +48,41 @@ export function createProvider(id: ProviderId, apiKey: string, model?: string): 
     apiKey,
     model: resolvedModel,
     extraHeaders,
+  });
+}
+
+/**
+ * Create a provider from a VexiConfig produced by `vexi setup`.
+ * When config.baseUrl is set, uses it directly (URL-based routing).
+ * Falls back to the ProviderId-based createProvider for old configs.
+ */
+export function createProviderFromConfig(config: VexiConfig): Provider {
+  if (!config.baseUrl) {
+    // Old-style config: route by ProviderId
+    return createProvider(config.provider as ProviderId, config.apiKey, config.model);
+  }
+
+  const model = config.model ?? 'gpt-4o';
+
+  if (config.provider === 'anthropic') {
+    return createAnthropicProvider(config.apiKey, model, config.baseUrl);
+  }
+
+  const extraHeaders: Record<string, string> | undefined =
+    config.provider === 'openrouter'
+      ? { 'HTTP-Referer': 'https://vexi.pro', 'X-Title': 'Vexi' }
+      : undefined;
+
+  // Z.ai GLM-5 models support reasoning_effort for extended thinking
+  const extraBody: Record<string, unknown> | undefined =
+    model.startsWith('z-ai/glm-5') ? { reasoning_effort: 'high' } : undefined;
+
+  return createOpenAICompatProvider({
+    id: config.provider,
+    baseUrl: config.baseUrl,
+    apiKey: config.apiKey,
+    model,
+    extraHeaders,
+    extraBody,
   });
 }

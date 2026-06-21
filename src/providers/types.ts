@@ -13,7 +13,7 @@ export interface ChatMessage {
 }
 
 export interface Provider {
-  id: ProviderId;
+  id: string; // ProviderId for built-in providers, free-form string for URL-based providers
   model: string;
   /**
    * Send a conversation and stream the assistant reply.

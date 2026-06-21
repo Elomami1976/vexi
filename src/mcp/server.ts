@@ -24,9 +24,10 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
+import { VERSION } from '../version.js';
 
 import { loadConfig } from '../config.js';
-import { createProvider } from '../providers/index.js';
+import { createProviderFromConfig } from '../providers/index.js';
 import { scanProject, projectSummary } from '../scanner/index.js';
 import { loadMemory, memoryBlock } from '../memory/index.js';
 import { listSessions } from '../replay/recorder.js';
@@ -35,7 +36,7 @@ import { SUPPORTED_LANGS, type Lang } from '../i18n/index.js';
 
 export async function runMcpServer(): Promise<void> {
   const root = process.cwd();
-  const server = new McpServer({ name: 'vexi', version: '0.5.0' });
+  const server = new McpServer({ name: 'vexi', version: VERSION });
 
   // ── Resources ──────────────────────────────────────────────────────────
   server.registerResource(
@@ -128,7 +129,7 @@ export async function runMcpServer(): Promise<void> {
         };
       }
       try {
-        const provider = createProvider(config.provider, config.apiKey, config.model);
+        const provider = createProviderFromConfig(config);
         const source = await gatherSource(path);
         const markdown = await provider.stream(buildExplainMessages(source, language), () => {});
         return { content: [{ type: 'text', text: markdown }] };

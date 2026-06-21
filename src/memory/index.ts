@@ -15,6 +15,7 @@
  */
 
 import { join } from 'node:path';
+import { z } from 'zod';
 import { readJson, writeJsonAtomic } from '../utils/fs-atomic.js';
 import type { ChatMessage, Provider } from '../providers/types.js';
 
@@ -120,15 +121,12 @@ export async function compressIntoMemory(
     );
 
     const parsed = extractJson(raw);
-    if (!parsed || typeof parsed.summary !== 'string' || !Array.isArray(parsed.decisions)) {
-      return memory;
-    }
+    if (!parsed) return memory;
 
     return {
       version: 1,
       summary: parsed.summary.trim(),
       decisions: parsed.decisions
-        .filter((d): d is string => typeof d === 'string')
         .map((d) => d.trim())
         .filter(Boolean)
         .slice(0, 20),
@@ -140,13 +138,20 @@ export async function compressIntoMemory(
   }
 }
 
-/** Extract the first JSON object from a model reply (tolerates fences/prose). */
-function extractJson(text: string): { summary?: unknown; decisions?: unknown[] } | null {
+const MemoryJsonSchema = z.object({
+  summary:   z.string(),
+  decisions: z.array(z.string()),
+});
+
+/** Extract and validate the first JSON object from a model reply (tolerates fences/prose). */
+function extractJson(text: string): z.infer<typeof MemoryJsonSchema> | null {
   const start = text.indexOf('{');
   const end = text.lastIndexOf('}');
   if (start === -1 || end <= start) return null;
   try {
-    return JSON.parse(text.slice(start, end + 1));
+    const parsed: unknown = JSON.parse(text.slice(start, end + 1));
+    const result = MemoryJsonSchema.safeParse(parsed);
+    return result.success ? result.data : null;
   } catch {
     return null;
   }

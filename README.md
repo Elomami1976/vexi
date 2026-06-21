@@ -32,6 +32,43 @@ vexi
 
 That's it. No login, no signup, no server, no database. Everything runs locally.
 
+## Update
+
+```bash
+vexi update
+# or directly:
+npm install -g vexi-cli@latest
+```
+
+Vexi checks once a day whether a newer version is published on npm and prints a
+one-line notice at startup if one is available. To disable the check:
+
+```bash
+vexi --no-update-check          # skip for this run
+VEXI_NO_UPDATE_CHECK=1 vexi     # skip via environment variable
+```
+
+## Uninstall
+
+```bash
+vexi uninstall           # removes Vexi, keeps your ~/.vexi config
+vexi uninstall --purge   # also deletes ~/.vexi (config, keys, memory)
+```
+
+Or directly, without running Vexi:
+
+```bash
+npm uninstall -g vexi-cli
+rm -rf ~/.vexi           # optional -- removes config, keys, and memory
+```
+
+On Windows:
+
+```cmd
+npm uninstall -g vexi-cli
+rmdir /s /q %USERPROFILE%\.vexi
+```
+
 ## BYOK — Bring Your Own Key
 
 On first run, paste any API key. Vexi **auto-detects the provider** from the key format:

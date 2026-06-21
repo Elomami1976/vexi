@@ -19,6 +19,8 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node dist/index.js",
+    "test": "vitest run",
+    "lint": "eslint src",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -58,6 +60,10 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
-    "typescript": "^5.7.0"
+    "@typescript-eslint/eslint-plugin": "^8.61.1",
+    "@typescript-eslint/parser": "^8.61.1",
+    "eslint": "^9.39.4",
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.9"
   }
 }

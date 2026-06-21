@@ -8,10 +8,11 @@ import { ProviderError } from './types.js';
 import type { ChatMessage, Provider } from './types.js';
 import { sseEvents, truncate } from './openai-compat.js';
 
-const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages';
+const ANTHROPIC_BASE = 'https://api.anthropic.com/v1';
 const ANTHROPIC_VERSION = '2023-06-01';
 
-export function createAnthropicProvider(apiKey: string, model: string): Provider {
+export function createAnthropicProvider(apiKey: string, model: string, baseUrl?: string): Provider {
+  const messagesEndpoint = `${baseUrl ?? ANTHROPIC_BASE}/messages`;
   return {
     id: 'anthropic',
     model,
@@ -24,7 +25,7 @@ export function createAnthropicProvider(apiKey: string, model: string): Provider
         .join('\n\n');
       const chat = messages.filter((m) => m.role !== 'system');
 
-      const res = await fetch(ANTHROPIC_API, {
+      const res = await fetch(messagesEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

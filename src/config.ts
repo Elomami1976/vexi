@@ -11,24 +11,43 @@
 import { promises as fs } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { z } from 'zod';
 import { readJson, writeJsonAtomic } from './utils/fs-atomic.js';
-import type { ProviderId } from './providers/types.js';
 
 export interface VexiConfig {
-  provider: ProviderId;
+  /** Provider identifier: a ProviderId for old key-based configs, or any string for URL-based configs. */
+  provider: string;
+  /** Human-readable label set by vexi setup (e.g. "Z.ai (Coding Plan)"). */
+  displayName?: string;
   apiKey: string;
+  /** API endpoint root set by vexi setup (e.g. "https://openrouter.ai/api/v1"). */
+  baseUrl?: string;
   model?: string;
   lang?: string;
 }
 
+const VexiConfigSchema = z.object({
+  provider:    z.string().min(1),
+  displayName: z.string().optional(),
+  apiKey:      z.string().min(1),
+  baseUrl:     z.string().optional(),
+  model:       z.string().optional(),
+  lang:        z.string().optional(),
+});
+
 export const VEXI_DIR = join(homedir(), '.vexi');
 export const CONFIG_PATH = join(VEXI_DIR, 'config.json');
 
-/** Load the config, or `null` if it doesn't exist / is unreadable. */
+/** Load the config, or `null` if it doesn't exist / is unreadable / fails validation. */
 export async function loadConfig(): Promise<VexiConfig | null> {
-  const config = await readJson<VexiConfig>(CONFIG_PATH);
-  if (!config?.apiKey || !config.provider) return null;
-  return config;
+  const raw = await readJson<unknown>(CONFIG_PATH);
+  if (!raw) return null;
+  const result = VexiConfigSchema.safeParse(raw);
+  if (!result.success) {
+    process.stderr.write(`[vexi] config validation failed: ${result.error.message}\n`);
+    return null;
+  }
+  return result.data as VexiConfig;
 }
 
 /** Save the config atomically with owner-only permissions. */

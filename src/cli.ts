@@ -18,7 +18,9 @@
  */
 
 import { Command } from 'commander';
+import { VERSION } from './version.js';
 import ora from 'ora';
+import { checkForUpdate, runUpdate, runUninstall } from './update/index.js';
 import { runAgent } from './agent.js';
 import { loadConfig, resetConfig, CONFIG_PATH } from './config.js';
 import { loadSkills, addSkill, removeSkill } from './skills/index.js';
@@ -29,13 +31,16 @@ import { buildGraph } from './graph/index.js';
 import { exportGraphHtml } from './graph/html.js';
 import { loadMcpConfig, saveMcpConfig, MCP_CONFIG_PATH } from './mcp/config.js';
 import { learn, applyLearned, DEFAULT_MAX_SESSIONS } from './learn/index.js';
-import { createProvider, PROVIDER_INFO } from './providers/index.js';
+import { createProviderFromConfig, PROVIDER_INFO } from './providers/index.js';
+import type { ProviderId } from './providers/index.js';
+import { runOnboarding } from './onboarding.js';
+import type { OnboardingIO } from './onboarding.js';
+import * as nodeRlPromises from 'node:readline/promises';
 import { openInDefaultApp } from './utils/open.js';
 import { SnapshotManager } from './snapshots/index.js';
 import { detectSystemLang, getStrings, normalizeLang, t, SUPPORTED_LANGS, type Lang } from './i18n/index.js';
 import { accent, dim, err, ok } from './ui/index.js';
 
-export const VERSION = '0.7.0';
 
 /** Resolve the active language: --lang flag > saved config > system locale. */
 async function resolveLang(flag?: string): Promise<Lang> {
@@ -60,15 +65,18 @@ export function buildCli(): Command {
     .version(VERSION, '-v, --version')
     .option('-l, --lang <lang>', `UI language (${SUPPORTED_LANGS.join('/')})`)
     .option('--mcp-server', 'run Vexi as an MCP server over stdio (for Claude Desktop, Cursor, etc.)')
-    .action(async (options: { lang?: string; mcpServer?: boolean }) => {
+    .option('--no-update-check', 'skip the daily background update check')
+    .action(async (options: { lang?: string; mcpServer?: boolean; updateCheck: boolean }) => {
       if (options.mcpServer) {
-        // stdout becomes the JSON-RPC channel — no banner, no prompts.
+        // stdout becomes the JSON-RPC channel -- no banner, no prompts.
         const { runMcpServer } = await import('./mcp/server.js');
         await runMcpServer();
         return;
       }
       const lang = await resolveLang(options.lang);
-      await runAgent({ lang, version: VERSION });
+      const noUpdateCheck = !options.updateCheck || !!process.env['VEXI_NO_UPDATE_CHECK'];
+      const updateCheckPromise = noUpdateCheck ? Promise.resolve(null) : checkForUpdate();
+      await runAgent({ lang, version: VERSION, updateCheckPromise });
     });
 
   const config = program.command('config').description('Manage Vexi configuration');
@@ -80,11 +88,14 @@ export function buildCli(): Command {
       const cfg = await loadConfig();
       console.log(dim('config: ') + accent(CONFIG_PATH));
       if (cfg) {
-        console.log(dim('provider: ') + accent(PROVIDER_INFO[cfg.provider].label));
-        console.log(dim('model: ') + accent(cfg.model ?? PROVIDER_INFO[cfg.provider].defaultModel));
+        const providerLabel = cfg.displayName ?? PROVIDER_INFO[cfg.provider as ProviderId]?.label ?? cfg.provider;
+        console.log(dim('provider: ') + accent(providerLabel));
+        const defaultModel = PROVIDER_INFO[cfg.provider as ProviderId]?.defaultModel ?? 'unknown';
+        console.log(dim('model: ') + accent(cfg.model ?? defaultModel));
+        if (cfg.baseUrl) console.log(dim('baseUrl: ') + accent(cfg.baseUrl));
         console.log(dim('lang: ') + accent(cfg.lang ?? 'auto'));
       } else {
-        console.log(dim('No configuration yet — run `vexi` to set up.'));
+        console.log(dim('No configuration yet — run `vexi` or `vexi setup` to configure.'));
       }
     });
 
@@ -197,7 +208,7 @@ export function buildCli(): Command {
         process.exitCode = 1;
         return;
       }
-      const provider = createProvider(cfg.provider, cfg.apiKey, cfg.model);
+      const provider = createProviderFromConfig(cfg);
 
       const spinner = ora({ text: dim(s.explaining), spinner: 'dots' }).start();
       let started = false;
@@ -314,7 +325,7 @@ export function buildCli(): Command {
         process.exitCode = 1;
         return;
       }
-      const provider = createProvider(cfg.provider, cfg.apiKey, cfg.model);
+      const provider = createProviderFromConfig(cfg);
       const maxSessions = Math.max(1, parseInt(options.sessions ?? '', 10) || DEFAULT_MAX_SESSIONS);
 
       const spinner = ora({ text: dim(s.learnAnalyzing), spinner: 'dots' }).start();
@@ -417,6 +428,50 @@ export function buildCli(): Command {
       const mgr = await SnapshotManager.forCurrentSession(process.cwd());
       const count = await SnapshotManager.cleanAll(process.cwd(), mgr?.sessionId);
       console.log(ok(t(s.cleanDone, { count: String(count) })));
+    });
+
+  // ── URL-based provider setup (vexi setup) ────────────────────────────
+  program
+    .command('setup')
+    .description('Configure your API provider by pasting an endpoint URL')
+    .action(async () => {
+      const io: OnboardingIO = {
+        prompt: async (question: string) => {
+          const iface = nodeRlPromises.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+          });
+          try {
+            return await iface.question(question);
+          } finally {
+            iface.close();
+          }
+        },
+        write: (line: string) => console.log(line),
+      };
+      try {
+        await runOnboarding(io);
+      } catch (e) {
+        console.error(err(e instanceof Error ? e.message : String(e)));
+        process.exitCode = 1;
+      }
+    });
+
+  // ── Self-update (vexi update) ─────────────────────────────────────────
+  program
+    .command('update')
+    .description('Update Vexi to the latest version (npm install -g vexi-cli@latest)')
+    .action(async () => {
+      await runUpdate();
+    });
+
+  // ── Self-uninstall (vexi uninstall) ──────────────────────────────────
+  program
+    .command('uninstall')
+    .description('Uninstall Vexi. Keeps ~/.vexi unless --purge is passed.')
+    .option('--purge', 'also delete ~/.vexi (config, keys, memory, sessions)')
+    .action(async (options: { purge?: boolean }) => {
+      await runUninstall(!!options.purge);
     });
 
   return program;
