@@ -31,7 +31,11 @@ const BASE_URLS: Partial<Record<ProviderId, string>> = {
 };
 
 export function createProvider(id: ProviderId, apiKey: string, model?: string): Provider {
-  const resolvedModel = model ?? PROVIDER_INFO[id].defaultModel;
+  const info = PROVIDER_INFO[id];
+  if (!info) {
+    throw new Error(`Unknown provider "${id}". Run \`vexi config reset\` to reconfigure.`);
+  }
+  const resolvedModel = model ?? info.defaultModel;
 
   if (id === 'anthropic') {
     return createAnthropicProvider(apiKey, resolvedModel);
