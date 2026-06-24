@@ -153,6 +153,10 @@ vexi undo                   # revert the last AI file edit
 vexi redo                   # re-apply a reverted edit
 vexi history                # list recent AI file edits with timestamps
 vexi clean                  # clear old snapshots (.vexi/snapshots/)
+vexi setup                  # configure any OpenAI-compatible endpoint by URL
+vexi update                 # update Vexi to the latest version
+vexi uninstall              # uninstall Vexi (keeps ~/.vexi config)
+vexi uninstall --purge      # uninstall + delete ~/.vexi
 ```
 
 Inside the chat:
@@ -165,6 +169,7 @@ Inside the chat:
 /undo     revert last AI file edit
 /redo     re-apply last undone edit
 /history  list recent AI file edits
+/push     stage, commit and push to git
 /exit     quit
 ```
 
@@ -319,6 +324,38 @@ session, so you stop repeating yourself. Everything stays local — the only
 network call is to your own model provider, and you always preview before
 saving.
 
+## 🔗 URL-based setup — any OpenAI-compatible endpoint
+
+```bash
+vexi setup
+```
+
+Paste any API endpoint URL and Vexi auto-detects the provider, fetches available models, and lets you pick one — no manual config editing required. Works with:
+
+- **Local models** — Ollama (`http://localhost:11434`), LM Studio, etc.
+- **Custom proxies** — your own OpenAI-compatible gateway
+- **Specialist providers** — Z.ai Coding Plan, Cloudflare Workers AI, and any `/v1/chat/completions`-compatible API
+
+```
+? Paste your endpoint URL › https://openrouter.ai/api/v1
+  Detected: OpenRouter
+? Paste your API key › sk-or-...
+  Fetching available models…
+? Choose a model › meta-llama/llama-3.3-70b-instruct:free
+  ✓ Saved — run `vexi` to start
+```
+
+## 🚀 Git push from chat — `/push`
+
+Stage, commit and push without leaving the session. The AI drafts the commit message from your staged diff:
+
+```
+/push                 # AI writes commit message, confirms, then pushes
+/push --only          # push current branch without a new commit
+```
+
+Auth pre-flight runs before the real push so you get a clear error if credentials are missing, not a mid-push failure.
+
 ## ↩️ Undo / Redo — instant rescue from any AI edit
 
 > Approve a change, see it break things, type `vexi undo`. Done.
@@ -353,13 +390,16 @@ This pairs naturally with the confirmation prompt: even if you approve a change 
 | 5 | **Vexi Learn** — adapts to your personal coding style | ✅ done |
 | 6 | **Multi-language builds** — auto-executes pip, gcc, javac, cargo, gradle from chat | ✅ done |
 | 7 | **Undo / Redo** — instant one-command revert of any AI file edit, without touching git | ✅ done |
+| 8 | **`/push`** — stage, AI-draft commit message, and push to git from chat | ✅ done |
+| 9 | **`vexi setup`** — configure any OpenAI-compatible endpoint by pasting a URL | ✅ done |
+| 10 | **Self-maintaining** — `vexi update`, `vexi uninstall`, daily update-check notice | ✅ done |
 
 ## Why Vexi?
 
 | | Vexi | OpenCode | Claude Code | Cursor |
 | --- | --- | --- | --- | --- |
 | Install | `npm i -g vexi-cli` | binary/script | `npm i -g` | desktop app |
-| BYOK (any provider) | ✅ 12 providers incl. Chinese AI | ✅ | ❌ Anthropic only | partial |
+| BYOK (any provider) | ✅ 13 providers incl. Chinese AI + URL endpoints | ✅ | ❌ Anthropic only | partial |
 | Works fully offline/local | ✅ no server, no account | ✅ | ❌ account | ❌ account |
 | Native-language code explanations | ✅ ar/es/pt/fr | ❌ | ❌ | ❌ |
 | Session replay export | ✅ | ❌ | ❌ | ❌ |
@@ -368,6 +408,8 @@ This pairs naturally with the confirmation prompt: even if you approve a change 
 | MCP server mode (be a tool for other agents) | ✅ | ❌ | ❌ | ❌ |
 | Builds any language (Python, Java, C, Rust, Go) | ✅ | ❌ | ✅ | ✅ |
 | Instant undo/redo of AI edits (no git required) | ✅ per-file snapshots | ❌ | ❌ | ❌ |
+| Git push from chat (AI commit message) | ✅ `/push` | ❌ | ✅ | partial |
+| URL endpoint setup (Ollama, custom proxies) | ✅ `vexi setup` | ❌ | ❌ | ❌ |
 | License | MIT | MIT | proprietary | proprietary |
 
 Vexi **complements** tools like Claude Code instead of competing: its project memory and multilingual explanations will be exposed over MCP so any agent can use them.
@@ -388,7 +430,10 @@ src/
 ├── cli.ts          CLI definition (commander)
 ├── agent.ts        chat loop + first-run onboarding
 ├── config.ts       ~/.vexi/config.json (atomic, chmod 600)
-├── providers/      key detection + streaming API clients
+├── version.ts      dynamic VERSION from package.json
+├── endpoint.ts     URL provider detection + model discovery (vexi setup)
+├── onboarding.ts   interactive URL-based setup wizard
+├── providers/      key detection + streaming API clients (13 providers)
 ├── scanner/        project mapper (.gitignore-aware, size-capped)
 ├── memory/         Context Compression Engine (.vexi/memory.json)
 ├── skills/         custom skills loader (.vexi/skills/*.md)
@@ -398,6 +443,8 @@ src/
 ├── mcp/            MCP client (tools in chat) + server mode
 ├── learn/          Vexi Learn — style mining from your own sessions
 ├── snapshots/      undo/redo engine — per-file backups before AI edits
+├── git/            /push command — stage, AI commit message, push
+├── update/         vexi update / uninstall + daily update-check
 ├── i18n/           5-language UI strings + RTL strategy
 ├── ui/             terminal branding (chalk, ora)
 └── utils/          atomic JSON writes, cross-platform open
