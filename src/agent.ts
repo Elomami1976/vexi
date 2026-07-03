@@ -69,12 +69,27 @@ function extractShellBlocks(reply: string): string[] {
   return blocks;
 }
 
+/** Hard cap on how long an AI-suggested command may run before it's killed. */
+const COMMAND_TIMEOUT_MS = 2 * 60 * 1000;
+
 /** Run a shell command and return { stdout, stderr, code }. */
 function runCommand(cmd: string, cwd: string): Promise<{ stdout: string; stderr: string; code: number }> {
   return new Promise((resolve) => {
-    cpExec(cmd, { cwd, shell: process.platform === 'win32' ? 'powershell.exe' : '/bin/sh', maxBuffer: 1024 * 1024 * 4 }, (err, stdout, stderr) => {
-      resolve({ stdout: stdout ?? '', stderr: stderr ?? '', code: err?.code ?? 0 });
-    });
+    cpExec(
+      cmd,
+      {
+        cwd,
+        shell: process.platform === 'win32' ? 'powershell.exe' : '/bin/sh',
+        maxBuffer: 1024 * 1024 * 4,
+        timeout: COMMAND_TIMEOUT_MS,
+        killSignal: 'SIGKILL',
+      },
+      (err, stdout, stderr) => {
+        const timedOut = Boolean(err?.killed && err.signal === 'SIGKILL');
+        const extraNote = timedOut ? `\n[vexi] command killed after exceeding ${COMMAND_TIMEOUT_MS / 1000}s timeout` : '';
+        resolve({ stdout: stdout ?? '', stderr: (stderr ?? '') + extraNote, code: err?.code ?? 0 });
+      },
+    );
   });
 }
 
@@ -376,7 +391,9 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
     let started = false;
 
     try {
-      // Up to 5 tool-call rounds per user turn, then a final plain answer.
+      // Up to 5 tool-call rounds per user turn (round < 5 below), plus one
+      // extra final round where a ```vexi-tool``` reply is no longer honored
+      // — so the model is forced to give a plain answer. 6 stream() calls total.
       for (let round = 0; round < 6; round++) {
         const reply = await provider.stream([buildSystem(), ...history], (chunk) => {
           if (!started) {

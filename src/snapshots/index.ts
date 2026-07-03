@@ -21,8 +21,21 @@
 
 import { promises as fs } from 'node:fs';
 import { existsSync } from 'node:fs';
-import { join, isAbsolute, relative, dirname } from 'node:path';
+import { join, isAbsolute, relative, dirname, resolve, sep } from 'node:path';
 import { writeJsonAtomic, readJson } from '../utils/fs-atomic.js';
+
+/**
+ * Resolve `rel` against `root` and verify the result stays inside `root`.
+ * Blocks path traversal (e.g. a relative path containing `..` segments)
+ * from letting snapshot save/restore read or overwrite files outside the
+ * project — snapshots are only ever meant to cover project files.
+ */
+function resolveWithinRoot(root: string, rel: string): string | null {
+  const absRoot = resolve(root);
+  const abs = isAbsolute(rel) ? resolve(rel) : resolve(absRoot, rel);
+  if (abs !== absRoot && !abs.startsWith(absRoot + sep)) return null;
+  return abs;
+}
 
 export interface SnapshotEntry {
   id: string;
@@ -100,8 +113,8 @@ export class SnapshotManager {
     await fs.mkdir(dir, { recursive: true });
     const saved: string[] = [];
     for (const rel of relPaths) {
-      const abs = isAbsolute(rel) ? rel : join(this.root, rel);
-      if (!existsSync(abs)) continue;
+      const abs = resolveWithinRoot(this.root, rel);
+      if (!abs || !existsSync(abs)) continue;
       await fs.copyFile(abs, join(dir, encodeRelPath(rel)));
       saved.push(rel);
     }
@@ -111,7 +124,8 @@ export class SnapshotManager {
   private async restoreFiles(id: string, relPaths: string[]): Promise<void> {
     const dir = join(this.sessionDir, id, 'files');
     for (const rel of relPaths) {
-      const dest = isAbsolute(rel) ? rel : join(this.root, rel);
+      const dest = resolveWithinRoot(this.root, rel);
+      if (!dest) continue;
       try {
         await fs.copyFile(join(dir, encodeRelPath(rel)), dest);
       } catch {}
@@ -242,6 +256,7 @@ export class SnapshotManager {
       const p = raw.trim().replace(/^["']|["']$/g, '');
       if (!p || p.startsWith('-') || p.startsWith('http') || p === '/dev/null') return;
       const abs = isAbsolute(p) ? p : join(cwd, p);
+      if (!resolveWithinRoot(cwd, abs)) return; // never track files outside the project root
       if (existsSync(abs)) {
         found.add(relative(cwd, abs).replace(/\\/g, '/'));
       }

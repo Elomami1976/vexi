@@ -15,6 +15,7 @@ import { promises as fs } from 'node:fs';
 import { join } from 'node:path';
 import type { DependencyGraph } from './index.js';
 import type { Lang } from '../i18n/index.js';
+import { escapeHtml } from '../utils/html.js';
 
 const LABELS: Record<Lang, Record<string, string>> = {
   en: {
@@ -97,7 +98,7 @@ export function buildGraphHtml(graph: DependencyGraph, lang: Lang): string {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${L.title} — ${escapeHtml(graph.project)}</title>
-<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
 <style>
   :root { --accent: #2979FF; --bg: #0a0a0f; --panel: #12121a; --text: #e8e8f0; --dim: #8888a0; }
   * { box-sizing: border-box; }
@@ -227,12 +228,4 @@ document.getElementById('search').addEventListener('input', (ev) => {
 </body>
 </html>
 `;
-}
-
-function escapeHtml(text: string): string {
-  return text
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
 }

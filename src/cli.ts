@@ -18,6 +18,7 @@
  */
 
 import { Command } from 'commander';
+import { confirm } from '@inquirer/prompts';
 import { VERSION } from './version.js';
 import ora from 'ora';
 import { checkForUpdate, runUpdate, runUninstall } from './update/index.js';
@@ -134,7 +135,15 @@ export function buildCli(): Command {
     .action(async (source: string) => {
       const s = getStrings(await resolveLang());
       try {
-        const name = await addSkill(process.cwd(), source);
+        const name = await addSkill(process.cwd(), source, {
+          confirmRemoteContent: async (content, skillName, sourceUrl) => {
+            console.log(dim(`\nFetched from ${sourceUrl} — this will be added to every prompt as an instruction the AI must follow:\n`));
+            console.log(dim('─'.repeat(60)));
+            console.log(content.slice(0, 2000) + (content.length > 2000 ? dim('\n… (truncated)') : ''));
+            console.log(dim('─'.repeat(60)));
+            return confirm({ message: `Save as skill "${skillName}"?`, default: false });
+          },
+        });
         console.log(ok(t(s.skillAdded, { name })));
       } catch (e) {
         console.error(err(e instanceof Error ? e.message : String(e)));

@@ -13,6 +13,7 @@
 
 import { promises as fs } from 'node:fs';
 import { basename, join, relative, resolve } from 'node:path';
+import { escapeHtml } from '../utils/html.js';
 import type { Lang } from '../i18n/index.js';
 import type { ChatMessage, Provider } from '../providers/types.js';
 
@@ -258,10 +259,3 @@ function inline(text: string): string {
     .replace(/`([^`]+)`/g, '<code>$1</code>');
 }
 
-function escapeHtml(text: string): string {
-  return text
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
-}

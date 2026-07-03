@@ -31,6 +31,20 @@ function shellQuote(s: string): string {
   return "'" + s.replace(/'/g, "'\\''") + "'";
 }
 
+/** Max length for a model-drafted commit message (well above conventional-commit norms). */
+const MAX_COMMIT_MSG_LEN = 200;
+
+/**
+ * Take the model's raw reply and turn it into a safe single-line commit message:
+ * first line only, control/escape characters stripped (so a malicious or broken
+ * reply can't inject terminal escape sequences when echoed back), length-capped.
+ */
+function sanitizeCommitMessage(raw: string): string {
+  const firstLine = raw.replace(/`/g, '').split('\n')[0] ?? '';
+  const noControlChars = firstLine.replace(/[\x00-\x1f\x7f]/g, '');
+  return noControlChars.trim().slice(0, MAX_COMMIT_MSG_LEN);
+}
+
 const AUTH_SIGNATURES = [
   'could not read',
   'authentication failed',
@@ -107,7 +121,7 @@ export async function gitPush(opts: GitPushOpts): Promise<GitPushResult> {
         ];
         try {
           const raw = await provider.stream(messages, () => {});
-          commitMsg = raw.replace(/`/g, '').split('\n')[0]?.trim() ?? '';
+          commitMsg = sanitizeCommitMessage(raw);
         } catch {
           // fall through to default below
         }

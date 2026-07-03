@@ -75,7 +75,11 @@ export class McpManager {
     const parsed = McpManager.ArgsSchema.safeParse(args);
     if (!parsed.success) throw new Error(`Invalid tool arguments: ${parsed.error.message}`);
 
-    const result = await connection.client.callTool({ name: tool, arguments: parsed.data });
+    // Explicit timeout (matches the SDK default) so a hung MCP server can
+    // never freeze the chat loop, regardless of future SDK default changes.
+    const result = await connection.client.callTool({ name: tool, arguments: parsed.data }, undefined, {
+      timeout: 60_000,
+    });
     const content = Array.isArray(result.content) ? result.content : [];
     const text = content
       .map((c: { type: string; text?: string }) => (c.type === 'text' ? (c.text ?? '') : `[${c.type}]`))

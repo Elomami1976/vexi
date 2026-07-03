@@ -25,46 +25,97 @@ export function createOpenAICompatProvider(opts: OpenAICompatOptions): Provider 
     model: opts.model,
 
     async stream(messages: ChatMessage[], onText: (text: string) => void): Promise<string> {
-      const res = await fetch(`${opts.baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${opts.apiKey}`,
-          ...opts.extraHeaders,
-        },
-        body: JSON.stringify({
-          model: opts.model,
-          messages,
-          stream: true,
-          ...opts.extraBody,
-        }),
-      }).catch((err: Error) => {
-        throw new ProviderError(`Network error: ${err.message}`);
-      });
+      const guard = createStreamTimeoutGuard(opts.id);
+      try {
+        const res = await fetch(`${opts.baseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${opts.apiKey}`,
+            ...opts.extraHeaders,
+          },
+          body: JSON.stringify({
+            model: opts.model,
+            messages,
+            stream: true,
+            ...opts.extraBody,
+          }),
+          signal: guard.signal,
+        }).catch((err: Error) => {
+          throw guard.wrapNetworkError(err);
+        });
 
-      if (!res.ok || !res.body) {
-        const body = await res.text().catch(() => '');
-        throw new ProviderError(
-          `${opts.id} API error (HTTP ${res.status}): ${truncate(body, 300)}`,
-          res.status,
-        );
-      }
-
-      let full = '';
-      for await (const data of sseEvents(res.body)) {
-        if (data === '[DONE]') break;
-        try {
-          const json = JSON.parse(data);
-          const text: string | undefined = json.choices?.[0]?.delta?.content;
-          if (text) {
-            full += text;
-            onText(text);
-          }
-        } catch {
-          // Ignore malformed/keep-alive chunks
+        if (!res.ok || !res.body) {
+          const body = await res.text().catch(() => '');
+          throw new ProviderError(
+            `${opts.id} API error (HTTP ${res.status}): ${truncate(body, 300)}`,
+            res.status,
+          );
         }
+
+        let full = '';
+        try {
+          for await (const data of sseEvents(res.body)) {
+            guard.resetIdleTimer();
+            if (data === '[DONE]') break;
+            try {
+              const json = JSON.parse(data);
+              const text: string | undefined = json.choices?.[0]?.delta?.content;
+              if (text) {
+                full += text;
+                onText(text);
+              }
+            } catch {
+              // Ignore malformed/keep-alive chunks
+            }
+          }
+        } catch (e) {
+          throw guard.wrapStreamError(e);
+        }
+        return full;
+      } finally {
+        guard.dispose();
       }
-      return full;
+    },
+  };
+}
+
+/** Abort the connection if the server goes silent for this long between chunks. */
+const IDLE_TIMEOUT_MS = 60_000;
+/** Hard ceiling on total stream duration, regardless of activity. */
+const MAX_STREAM_MS = 10 * 60 * 1000;
+
+/**
+ * Shared guard against hung provider connections: aborts the fetch if no
+ * bytes arrive for IDLE_TIMEOUT_MS, or if the whole stream runs past
+ * MAX_STREAM_MS, so a stalled provider can never freeze the chat loop.
+ */
+export function createStreamTimeoutGuard(providerId: string) {
+  const controller = new AbortController();
+  let idleTimer: ReturnType<typeof setTimeout>;
+  const hardTimer = setTimeout(() => controller.abort(), MAX_STREAM_MS);
+  const resetIdleTimer = () => {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => controller.abort(), IDLE_TIMEOUT_MS);
+  };
+  resetIdleTimer();
+
+  return {
+    signal: controller.signal,
+    resetIdleTimer,
+    wrapNetworkError(err: Error): ProviderError {
+      if (controller.signal.aborted) return new ProviderError(`${providerId} request timed out (no response).`);
+      return new ProviderError(`Network error: ${err.message}`);
+    },
+    wrapStreamError(e: unknown): unknown {
+      if (controller.signal.aborted) {
+        return new ProviderError(`${providerId} stream stalled or exceeded the time limit and was aborted.`);
+      }
+      return e;
+    },
+    dispose(): void {
+      clearTimeout(idleTimer);
+      clearTimeout(hardTimer);
     },
   };
 }

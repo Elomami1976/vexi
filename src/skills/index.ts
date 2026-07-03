@@ -56,11 +56,23 @@ export function skillsBlock(skills: Skill[]): string {
   return parts.join('\n\n');
 }
 
+export interface AddSkillOptions {
+  /**
+   * Called with the fetched content before it's saved, ONLY when the skill
+   * comes from a remote URL. Return false to abort. Skills are injected
+   * into the system prompt as instructions the model "MUST follow", so
+   * content pulled from an arbitrary third-party URL must be reviewable
+   * before it's trusted — this is the caller's chance to show a preview
+   * and get explicit user confirmation.
+   */
+  confirmRemoteContent?: (content: string, name: string, sourceUrl: string) => Promise<boolean> | boolean;
+}
+
 /**
  * Add a skill from a local file path or a URL (GitHub URLs are converted
  * to raw content automatically). Returns the saved skill name.
  */
-export async function addSkill(root: string, source: string): Promise<string> {
+export async function addSkill(root: string, source: string, opts: AddSkillOptions = {}): Promise<string> {
   let content: string;
   let name: string;
 
@@ -72,13 +84,20 @@ export async function addSkill(root: string, source: string): Promise<string> {
     }
     content = await res.text();
     name = skillNameFromUrl(source);
+
+    content = content.slice(0, MAX_SKILL_SIZE).trim();
+    if (!content) throw new Error('Skill source is empty.');
+
+    if (opts.confirmRemoteContent) {
+      const proceed = await opts.confirmRemoteContent(content, sanitizeName(name), url);
+      if (!proceed) throw new Error('Skill add cancelled.');
+    }
   } else {
     content = await fs.readFile(source, 'utf8');
     name = basename(source, extname(source));
+    content = content.slice(0, MAX_SKILL_SIZE).trim();
+    if (!content) throw new Error('Skill source is empty.');
   }
-
-  content = content.slice(0, MAX_SKILL_SIZE).trim();
-  if (!content) throw new Error('Skill source is empty.');
 
   name = sanitizeName(name);
   const dir = skillsDir(root);

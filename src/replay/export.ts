@@ -18,6 +18,7 @@ import { promises as fs } from 'node:fs';
 import { join } from 'node:path';
 import type { Lang } from '../i18n/index.js';
 import { loadSession } from './recorder.js';
+import { escapeHtml } from '../utils/html.js';
 
 /** UI labels for the generated page, per export language. */
 const LABELS: Record<Lang, Record<string, string>> = {
@@ -330,12 +331,4 @@ document.getElementById('record').onclick = async () => {
 </body>
 </html>
 `;
-}
-
-function escapeHtml(text: string): string {
-  return text
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
 }
