@@ -2,7 +2,7 @@
 
 > Open-source AI coding agent for your terminal. Bring your own key, zero config, 100% local.
 
-Vexi is a free, open-source CLI tool that brings AI coding assistance directly into your terminal. It works with any API key (Anthropic, OpenAI, Groq, Google Gemini, OpenRouter), runs entirely on your machine, and requires no account or server.
+Vexi is a free, open-source CLI tool that brings AI coding assistance directly into your terminal. It works with any API key across 13 providers (Anthropic, OpenAI, Groq, Google Gemini, OpenRouter, Cerebras, DeepSeek, Zhipu AI, Qwen, Kimi, MiniMax, Mistral, Z.ai) or any OpenAI-compatible endpoint URL, runs entirely on your machine, and requires no account or server.
 
 ## Install
 
@@ -13,16 +13,21 @@ vexi
 
 ## Key features
 
-- **BYOK (Bring Your Own Key)**: Auto-detects your provider from the key format. Supports Anthropic Claude, OpenAI, Groq, Google Gemini, OpenRouter, and Mistral.
+- **BYOK (Bring Your Own Key)**: Auto-detects your provider from the key format. Supports 13 providers: Anthropic Claude, OpenAI, Groq, Google Gemini, OpenRouter, Cerebras, Zhipu AI (GLM), DeepSeek, Alibaba Qwen, Kimi (Moonshot), MiniMax, Mistral, and Z.ai.
+- **URL-based setup**: `vexi setup` — paste any OpenAI-compatible endpoint URL (Ollama, LM Studio, custom proxies) and Vexi detects the provider and fetches available models automatically.
 - **Context Compression Engine**: Keeps a running summary of your decisions across sessions. Never re-explains your project.
 - **Full project understanding**: Scans the entire codebase on startup (respects .gitignore, skips node_modules) and injects a compact map into every AI prompt.
 - **Multi-language build support**: Runs pip install, gcc, javac, cargo, gradle, and more directly from chat. Works with Python, Java, C, C++, Rust, Go, and JavaScript.
 - **Multilingual**: UI and code explanations in Arabic (ar), English (en), Spanish (es), Portuguese (pt), French (fr).
 - **Session replay**: Every session recorded locally; export as interactive standalone HTML.
-- **Custom skills**: Drop `.md` files in `.vexi/skills/` to teach Vexi your conventions.
+- **Custom skills**: Drop `.md` files in `.vexi/skills/` to teach Vexi your conventions. Share skills via GitHub URL, with a preview and confirmation before any remote content is trusted.
 - **Visual dependency graph**: Interactive d3 force-directed graph exported as a single HTML file.
 - **MCP support**: Works as both an MCP client (connects to external tools) and MCP server (exposes Vexi capabilities to Claude Desktop, Cursor, etc.).
 - **Vexi Learn**: Mines past sessions for your corrections and builds a personal style skill file.
+- **Git push from chat**: `/push` stages, drafts an AI commit message, and pushes without leaving the session.
+- **Undo / redo**: Every AI file edit is snapshotted before it happens; `vexi undo`, `vexi redo`, and `vexi history` roll back or replay changes without touching git.
+- **Non-interactive print mode**: `vexi -p "<prompt>"` runs a single non-interactive turn for scripts and CI pipelines; add `--yes` to auto-run any shell commands it proposes.
+- **Self-maintaining**: `vexi update` and `vexi uninstall` (with `--purge`), plus a daily background check that notifies you of new versions.
 
 ## Privacy
 
