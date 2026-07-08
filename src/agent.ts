@@ -58,7 +58,7 @@ interface AgentOptions {
 }
 
 /** Extract shell commands from fenced code blocks in an AI reply. */
-function extractShellBlocks(reply: string): string[] {
+export function extractShellBlocks(reply: string): string[] {
   const blocks: string[] = [];
   const re = /```(?:bash|sh|shell|cmd|powershell|ps1)\n([\s\S]*?)```/gi;
   let m: RegExpExecArray | null;
@@ -70,10 +70,14 @@ function extractShellBlocks(reply: string): string[] {
 }
 
 /** Hard cap on how long an AI-suggested command may run before it's killed. */
-const COMMAND_TIMEOUT_MS = 2 * 60 * 1000;
+export const COMMAND_TIMEOUT_MS = 2 * 60 * 1000;
 
 /** Run a shell command and return { stdout, stderr, code }. */
-function runCommand(cmd: string, cwd: string): Promise<{ stdout: string; stderr: string; code: number }> {
+export function runCommand(
+  cmd: string,
+  cwd: string,
+  timeoutMs: number = COMMAND_TIMEOUT_MS,
+): Promise<{ stdout: string; stderr: string; code: number }> {
   return new Promise((resolve) => {
     cpExec(
       cmd,
@@ -81,13 +85,16 @@ function runCommand(cmd: string, cwd: string): Promise<{ stdout: string; stderr:
         cwd,
         shell: process.platform === 'win32' ? 'powershell.exe' : '/bin/sh',
         maxBuffer: 1024 * 1024 * 4,
-        timeout: COMMAND_TIMEOUT_MS,
+        timeout: timeoutMs,
         killSignal: 'SIGKILL',
       },
       (err, stdout, stderr) => {
         const timedOut = Boolean(err?.killed && err.signal === 'SIGKILL');
-        const extraNote = timedOut ? `\n[vexi] command killed after exceeding ${COMMAND_TIMEOUT_MS / 1000}s timeout` : '';
-        resolve({ stdout: stdout ?? '', stderr: (stderr ?? '') + extraNote, code: err?.code ?? 0 });
+        const extraNote = timedOut ? `\n[vexi] command killed after exceeding ${timeoutMs / 1000}s timeout` : '';
+        // A killed process has no real exit code (err.code is undefined) — falling back to
+        // 0 would look like success to callers, so use the conventional timeout code (124).
+        const code = timedOut ? 124 : (err?.code ?? 0);
+        resolve({ stdout: stdout ?? '', stderr: (stderr ?? '') + extraNote, code });
       },
     );
   });
@@ -478,6 +485,107 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
         console.log(err(t(s.apiError, { message })) + '\n');
       }
     }
+  }
+}
+
+export interface PrintOptions {
+  prompt: string;
+  lang: Lang;
+  /** Auto-run any shell commands the model proposes instead of skipping them. */
+  autoYes: boolean;
+}
+
+/**
+ * Non-interactive, single-turn mode for scripting/CI (`vexi -p "<prompt>"`).
+ * Same system prompt (project scan + memory + skills + MCP tools) and the
+ * same tool-call loop as the interactive session, but no readline, no
+ * spinners, and no session recording. Requires an existing config — it
+ * never runs the interactive BYOK onboarding.
+ */
+export async function runPrint(opts: PrintOptions): Promise<void> {
+  const config = await loadConfig();
+  if (!config) {
+    console.error(err('No API key configured yet. Run `vexi` once interactively to set one up, then retry with -p.'));
+    process.exitCode = 1;
+    return;
+  }
+
+  const provider = createProviderFromConfig(config);
+  const root = process.cwd();
+
+  let project: ProjectMap | null = null;
+  try {
+    project = await scanProject(root);
+  } catch {
+    // scanning is best-effort — the prompt still works without it
+  }
+  const memory = await loadMemory(root);
+  const skills = await loadSkills(root);
+
+  const mcp = new McpManager();
+  const mcpConfig = await loadMcpConfig();
+  if (Object.keys(mcpConfig.mcpServers).length > 0) {
+    await mcp.connect().catch(() => {});
+  }
+
+  const snapshots = new SnapshotManager(root, Date.now().toString(36));
+  await snapshots.registerAsCurrentSession().catch(() => {});
+
+  const projectBlock = project ? projectSummary(project) : '';
+  const skillsText = skillsBlock(skills);
+  const buildSystem = (): ChatMessage => ({
+    role: 'system',
+    content: buildSystemPrompt(opts.lang, projectBlock, skillsText, memoryBlock(memory), mcp.promptBlock()),
+  });
+
+  const history: ChatMessage[] = [{ role: 'user', content: opts.prompt }];
+
+  try {
+    for (let round = 0; round < 6; round++) {
+      const reply = await provider.stream([buildSystem(), ...history], (chunk) => {
+        process.stdout.write(chunk);
+      });
+      process.stdout.write('\n');
+      history.push({ role: 'assistant', content: reply });
+
+      for (const cmd of extractShellBlocks(reply)) {
+        if (!opts.autoYes) {
+          console.error(dim(`[skipped — pass --yes to auto-run] $ ${cmd.slice(0, 120)}`));
+          history.push({ role: 'user', content: `COMMAND SKIPPED (non-interactive, no --yes flag): ${cmd}` });
+          continue;
+        }
+        console.error(accent('$ ') + cmd.slice(0, 120));
+        const filesToSnap = SnapshotManager.extractFilePaths(cmd, root);
+        if (filesToSnap.length > 0) {
+          await snapshots.takeSnapshot(filesToSnap, cmd.slice(0, 80)).catch(() => {});
+        }
+        const { stdout, stderr, code } = await runCommand(cmd, root);
+        console.error(code === 0 ? ok('✓ done') : err(`✗ exit ${code}`));
+        const output = [
+          stdout.trim() ? `STDOUT:\n${stdout.trim()}` : '',
+          stderr.trim() ? `STDERR:\n${stderr.trim()}` : '',
+          `EXIT CODE: ${code}`,
+        ].filter(Boolean).join('\n');
+        history.push({ role: 'user', content: `COMMAND RESULT (${cmd.slice(0, 60)}):\n${output.slice(0, 6000)}` });
+      }
+
+      const call = mcp.tools.length > 0 && round < 5 ? parseToolCall(reply) : null;
+      if (!call) break;
+
+      let result: string;
+      try {
+        result = await mcp.callTool(call.server, call.tool, call.arguments);
+      } catch (e) {
+        result = `TOOL ERROR: ${e instanceof Error ? e.message : String(e)}`;
+      }
+      history.push({ role: 'user', content: `TOOL RESULT (${call.server}/${call.tool}):\n${result.slice(0, 8000)}` });
+    }
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    console.error(err(message));
+    process.exitCode = 1;
+  } finally {
+    await mcp.close();
   }
 }
 

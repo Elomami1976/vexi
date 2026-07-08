@@ -22,7 +22,7 @@ import { confirm } from '@inquirer/prompts';
 import { VERSION } from './version.js';
 import ora from 'ora';
 import { checkForUpdate, runUpdate, runUninstall } from './update/index.js';
-import { runAgent } from './agent.js';
+import { runAgent, runPrint } from './agent.js';
 import { loadConfig, resetConfig, CONFIG_PATH } from './config.js';
 import { loadSkills, addSkill, removeSkill } from './skills/index.js';
 import { listSessions } from './replay/recorder.js';
@@ -65,9 +65,11 @@ export function buildCli(): Command {
     .description('Open-source AI coding agent for your terminal. BYOK, zero config, multilingual.')
     .version(VERSION, '-v, --version')
     .option('-l, --lang <lang>', `UI language (${SUPPORTED_LANGS.join('/')})`)
+    .option('-p, --print <prompt>', 'non-interactive: send one prompt, print the reply, exit (for scripts/CI)')
+    .option('-y, --yes', 'with --print, auto-run any shell commands the model proposes (no confirmation)')
     .option('--mcp-server', 'run Vexi as an MCP server over stdio (for Claude Desktop, Cursor, etc.)')
     .option('--no-update-check', 'skip the daily background update check')
-    .action(async (options: { lang?: string; mcpServer?: boolean; updateCheck: boolean }) => {
+    .action(async (options: { lang?: string; print?: string; yes?: boolean; mcpServer?: boolean; updateCheck: boolean }) => {
       if (options.mcpServer) {
         // stdout becomes the JSON-RPC channel -- no banner, no prompts.
         const { runMcpServer } = await import('./mcp/server.js');
@@ -75,6 +77,10 @@ export function buildCli(): Command {
         return;
       }
       const lang = await resolveLang(options.lang);
+      if (options.print) {
+        await runPrint({ prompt: options.print, lang, autoYes: !!options.yes });
+        return;
+      }
       const noUpdateCheck = !options.updateCheck || !!process.env['VEXI_NO_UPDATE_CHECK'];
       const updateCheckPromise = noUpdateCheck ? Promise.resolve(null) : checkForUpdate();
       await runAgent({ lang, version: VERSION, updateCheckPromise });

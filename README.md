@@ -89,7 +89,7 @@ On first run, paste any API key. Vexi **auto-detects the provider** from the key
 
 Your key is stored **locally** in `~/.vexi/config.json` with owner-only file permissions (`chmod 600`).
 
-### 🆓 Start for free — no credit card needed
+### <img src="assets/icons/gift.svg" width="20" height="20" alt=""/> Start for free — no credit card needed
 
 **International:**
 
@@ -135,6 +135,8 @@ Vexi auto-detects your system language on first run.
 ```bash
 vexi                  # start a chat session in the current project
 vexi --lang es        # start in Spanish
+vexi -p "explain the auth flow"        # one-shot, non-interactive (scripts/CI)
+vexi -p "add a health endpoint" --yes  # same, but auto-run any shell commands proposed
 vexi config           # show config location + provider + model
 vexi config reset     # delete the stored API key
 vexi skill list       # show active skills
@@ -173,7 +175,7 @@ Inside the chat:
 /exit     quit
 ```
 
-## ⚙️ Multi-language build support
+## <img src="assets/icons/settings.svg" width="22" height="22" alt=""/> Multi-language build support
 
 Vexi can build and run projects in **any language** — not just JavaScript. When the AI suggests commands, it wraps them in a shell block, Vexi asks for confirmation, then executes them automatically and feeds the output back to the AI.
 
@@ -189,7 +191,7 @@ Vexi can build and run projects in **any language** — not just JavaScript. Whe
 
 The project scanner automatically detects `.py`, `.java`, `.c`, `.cpp`, `.rs`, `.go` files and tells the AI what language your project uses before the first message.
 
-## 🧠 Project memory — Context Compression Engine
+## <img src="assets/icons/brain-circuit.svg" width="22" height="22" alt=""/> Project memory — Context Compression Engine
 
 Most AI coding tools forget earlier decisions once the conversation gets long.
 Vexi doesn't delete old messages — it **compresses** them:
@@ -201,7 +203,7 @@ Vexi doesn't delete old messages — it **compresses** them:
   your decisions **across sessions**, even in large projects.
 - Inspect it anytime with `/memory`.
 
-## 🗺️ Full project understanding
+## <img src="assets/icons/map.svg" width="22" height="22" alt=""/> Full project understanding
 
 On startup Vexi scans your whole project (not just the open file) and injects
 a compact map into every prompt: languages, frameworks, and architecture
@@ -211,7 +213,7 @@ Scanner safeguards: respects `.gitignore`, always skips `node_modules`,
 `.git`, `dist`, `build`, `coverage`, and ignores files larger than 500KB —
 so it never floods the context window.
 
-## 🎯 Custom Skills
+## <img src="assets/icons/target.svg" width="22" height="22" alt=""/> Custom Skills
 
 Teach Vexi *your* conventions with plain markdown files in `.vexi/skills/`:
 
@@ -230,7 +232,7 @@ vexi skill add https://github.com/user/react-best-practices
 vexi skill add ./docs/conventions.md
 ```
 
-## 🎬 Vexi Replay
+## <img src="assets/icons/clapperboard.svg" width="22" height="22" alt=""/> Vexi Replay
 
 Every chat session is automatically recorded to `.vexi/sessions/` (locally,
 nothing leaves your machine). Export any session as a **single standalone
@@ -247,7 +249,7 @@ and it ends with a session summary (duration, messages, model). An
 **Export video** button records the replay right in the browser
 (MediaRecorder — no ffmpeg, the CLI stays lightweight). Share it anywhere.
 
-## 🌍 Explain code in your native language
+## <img src="assets/icons/languages.svg" width="22" height="22" alt=""/> Explain code in your native language
 
 > The first AI tool that explains any code in your native language.
 
@@ -262,7 +264,7 @@ numbers → how the pieces fit together. Latin-script languages stream
 directly in the terminal; Arabic is written to `.md` + `.html` (dir="rtl")
 and opened in your browser, where it renders perfectly.
 
-## 🗺️ Visual code graph
+## <img src="assets/icons/network.svg" width="22" height="22" alt=""/> Visual code graph
 
 ```bash
 vexi graph --visual
@@ -274,7 +276,7 @@ search. Node heat shows how many files depend on each module, and clicking
 a node runs **impact analysis** — highlighting every file that breaks if
 you change it.
 
-## 🔌 MCP support
+## <img src="assets/icons/plug.svg" width="22" height="22" alt=""/> MCP support
 
 **Vexi as MCP client** — connect external tools and the AI can call them
 mid-conversation (works with every provider, no function-calling API needed):
@@ -306,7 +308,7 @@ official `@modelcontextprotocol/sdk`:
 Vexi **complements** Claude Code instead of competing: its project memory
 becomes a shared memory layer usable by any agent.
 
-## 🧠 Vexi Learn
+## <img src="assets/icons/graduation-cap.svg" width="22" height="22" alt=""/> Vexi Learn
 
 > The agent gets more *you* over time.
 
@@ -324,7 +326,7 @@ session, so you stop repeating yourself. Everything stays local — the only
 network call is to your own model provider, and you always preview before
 saving.
 
-## 🔗 URL-based setup — any OpenAI-compatible endpoint
+## <img src="assets/icons/link.svg" width="22" height="22" alt=""/> URL-based setup — any OpenAI-compatible endpoint
 
 ```bash
 vexi setup
@@ -345,7 +347,7 @@ Paste any API endpoint URL and Vexi auto-detects the provider, fetches available
   ✓ Saved — run `vexi` to start
 ```
 
-## 🚀 Git push from chat — `/push`
+## <img src="assets/icons/rocket.svg" width="22" height="22" alt=""/> Git push from chat — `/push`
 
 Stage, commit and push without leaving the session. The AI drafts the commit message from your staged diff:
 
@@ -356,7 +358,7 @@ Stage, commit and push without leaving the session. The AI drafts the commit mes
 
 Auth pre-flight runs before the real push so you get a clear error if credentials are missing, not a mid-push failure.
 
-## ↩️ Undo / Redo — instant rescue from any AI edit
+## <img src="assets/icons/undo-2.svg" width="22" height="22" alt=""/> Undo / Redo — instant rescue from any AI edit
 
 > Approve a change, see it break things, type `vexi undo`. Done.
 
@@ -405,7 +407,7 @@ This pairs naturally with the confirmation prompt: even if you approve a change 
 | Session replay export | ✅ | ❌ | ❌ | ❌ |
 | Persistent project memory | ✅ | partial | partial | ✅ |
 | Learns your personal coding style | ✅ from your own sessions | ❌ | ❌ | partial |
-| MCP server mode (be a tool for other agents) | ✅ | ❌ | ❌ | ❌ |
+| MCP server mode (be a tool for other agents) | ✅ | ❌ | ✅ `claude mcp serve` | ❌ |
 | Builds any language (Python, Java, C, Rust, Go) | ✅ | ❌ | ✅ | ✅ |
 | Instant undo/redo of AI edits (no git required) | ✅ per-file snapshots | ❌ | ❌ | ❌ |
 | Git push from chat (AI commit message) | ✅ `/push` | ❌ | ✅ | partial |
@@ -459,19 +461,19 @@ To add support for a new key format, edit a single file: `src/providers/detect.t
 
 ---
 
-## 🌍 العربية
+## <img src="assets/icons/globe.svg" width="22" height="22" alt=""/> العربية
 
 **Vexi** — وكيل برمجة بالذكاء الاصطناعي مفتوح المصدر يعمل في الطرفية. ثبّته بأمر واحد (`npm install -g vexi-cli`)، الصق مفتاح API الخاص بك مرة واحدة، وابدأ فورًا. لا تسجيل، لا خادم، كل شيء يعمل محليًا على جهازك. يشرح Vexi أي كود بالعربية الفصحى (`vexi explain auth.ts --ar`) في ملفات HTML تدعم الاتجاه من اليمين لليسار بشكل مثالي، ويتعلّم أسلوبك البرمجي الشخصي من جلساتك السابقة (`vexi learn`).
 
-## 🌍 Español
+## <img src="assets/icons/globe.svg" width="22" height="22" alt=""/> Español
 
 **Vexi** es un agente de programación con IA, de código abierto, que vive en tu terminal. Instálalo con un solo comando (`npm install -g vexi-cli`), pega tu clave API una vez y empieza al instante. Sin registro, sin servidor: todo se ejecuta localmente. Vexi detecta tu proveedor automáticamente y habla tu idioma.
 
-## 🌍 Português
+## <img src="assets/icons/globe.svg" width="22" height="22" alt=""/> Português
 
 **Vexi** é um agente de programação com IA, de código aberto, que vive no seu terminal. Instale com um único comando (`npm install -g vexi-cli`), cole sua chave de API uma vez e comece imediatamente. Sem cadastro, sem servidor: tudo roda localmente. O Vexi detecta seu provedor automaticamente e fala o seu idioma.
 
-## 🌍 Français
+## <img src="assets/icons/globe.svg" width="22" height="22" alt=""/> Français
 
 **Vexi** est un agent de codage IA open source qui vit dans votre terminal. Installez-le en une seule commande (`npm install -g vexi-cli`), collez votre clé API une fois et commencez immédiatement. Pas de compte, pas de serveur : tout s'exécute localement. Vexi détecte automatiquement votre fournisseur et parle votre langue.
 
@@ -479,7 +481,7 @@ To add support for a new key format, edit a single file: `src/providers/detect.t
 
 <div align="center">
 
-**MIT License** · Made with ⚡ by the Vexi community
+**MIT License** · Made with <img src="assets/icons/zap.svg" width="16" height="16" alt="" style="vertical-align:text-bottom"/> by the Vexi community
 
 `npm install -g vexi-cli`
 
