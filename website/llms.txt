@@ -38,6 +38,7 @@ vexi
 ## Links
 
 - Website: https://vexi.pro
+- Documentation (5 languages): https://vexi.pro/docs.html
 - npm: https://www.npmjs.com/package/vexi-cli
 - GitHub: https://github.com/Elomami1976/vexi
 - Contact: hello@vexi.pro

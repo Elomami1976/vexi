@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vexi — Documentation</title>
+<meta name="description" content="Full Vexi documentation: install, connect an AI provider, custom skills, MCP servers, troubleshooting. Available in English, Arabic, French, Spanish, and Portuguese.">
+<meta property="og:title" content="Vexi — Documentation">
+<meta property="og:description" content="Full Vexi documentation in 5 languages: install, vexi setup, skills, MCP, troubleshooting.">
+<meta property="og:url" content="https://vexi.pro/docs.html">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#ffffff;
+  --bg2:#f6f8fc;
+  --bg3:#eef2f9;
+  --border:#e3e9f2;
+  --border2:#d3dcea;
+  --ink:#0c1320;
+  --ink2:#4a5568;
+  --ink3:#8b95a7;
+  --blue:#2979FF;
+  --blue-dark:#1b5fd9;
+  --blue-soft:#eaf1ff;
+  --cyan:#00b8d4;
+  --green:#1aa260;
+  --term-bg:#0a0c12;
+  --sans:'Inter',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.container{max-width:1080px;margin:0 auto;padding:0 24px}
+
+/* NAV (mirrors index.html) */
+nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.85);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px}
+.brand{display:flex;align-items:center;font-weight:800;font-size:21px;letter-spacing:1px}
+.nav-center{display:flex;gap:6px}
+.nav-center a{font-size:14px;font-weight:500;color:var(--ink2);padding:7px 12px;border-radius:8px;transition:all .15s}
+.nav-center a:hover{background:var(--bg3);color:var(--ink)}
+.nav-center a.active{color:var(--blue);background:var(--blue-soft)}
+.nav-links{display:flex;align-items:center;gap:8px}
+.nav-gh{display:flex;align-items:center;gap:7px;background:var(--ink);color:#fff;font-size:13px;font-weight:600;padding:8px 15px;border-radius:9px;transition:all .15s}
+.nav-gh:hover{background:#000;transform:translateY(-1px)}
+.nav-gh svg{width:16px;height:16px;fill:#fff}
+@media(max-width:860px){.nav-center{display:none}}
+
+/* DOC HERO */
+.doc-hero{padding:44px 0 20px;text-align:center}
+.doc-hero .tag{font-size:13px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.doc-hero h1{font-size:38px;font-weight:800;letter-spacing:-1px;margin-bottom:12px}
+.doc-hero p{font-size:16px;color:var(--ink2);max-width:560px;margin:0 auto}
+
+/* LANGUAGE JUMP BAR */
+.lang-jump{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:20px 24px 8px}
+.lang-jump a{font-size:13.5px;font-weight:600;color:var(--ink2);background:var(--bg2);border:1px solid var(--border);padding:8px 16px;border-radius:9px;transition:all .15s}
+.lang-jump a:hover{border-color:var(--blue);color:var(--blue)}
+
+/* DOC CONTENT */
+.doc-wrap{max-width:820px;margin:0 auto;padding:20px 24px 90px}
+.doc-lang{padding-top:8px}
+.doc-lang[dir="rtl"]{direction:rtl;text-align:right}
+.doc-lang[dir="rtl"] pre,.doc-lang[dir="rtl"] code{direction:ltr;text-align:left}
+.doc-wrap h1{font-size:26px;font-weight:800;letter-spacing:-.5px;margin:44px 0 16px;color:var(--ink)}
+.doc-wrap h2{font-size:20px;font-weight:700;margin:32px 0 12px;color:var(--ink)}
+.doc-wrap p{margin:0 0 14px;color:var(--ink2);font-size:15.5px;line-height:1.75}
+.doc-wrap strong{color:var(--ink);font-weight:700}
+.doc-wrap em{color:var(--ink2)}
+.doc-wrap a{color:var(--blue);font-weight:600}
+.doc-wrap a:hover{text-decoration:underline}
+.doc-wrap code{background:var(--bg3);padding:2px 7px;border-radius:6px;font-family:var(--mono);font-size:13.5px;color:var(--blue-dark)}
+.doc-wrap pre{background:var(--term-bg);color:#cdd4e0;padding:16px 18px;border-radius:12px;overflow-x:auto;margin:0 0 16px;font-family:var(--mono);font-size:13px;line-height:1.75}
+.doc-wrap pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.doc-wrap blockquote{background:var(--blue-soft);border-inline-start:3px solid var(--blue);padding:14px 18px;border-radius:10px;margin:0 0 16px}
+.doc-wrap blockquote p{margin:0;color:var(--ink);font-size:14.5px}
+.doc-wrap table{width:100%;border-collapse:collapse;margin:0 0 20px;font-size:14px;display:block;overflow-x:auto}
+.doc-wrap th,.doc-wrap td{padding:10px 14px;text-align:start;border-bottom:1px solid var(--border);white-space:nowrap}
+.doc-wrap thead th{color:var(--ink);font-weight:700;border-bottom:2px solid var(--border2)}
+.doc-wrap ul,.doc-wrap ol{margin:0 0 16px;padding-inline-start:22px}
+.doc-wrap li{margin-bottom:6px;color:var(--ink2);font-size:15px}
+.doc-wrap hr{border:none;border-top:1px solid var(--border);margin:44px 0}
+.doc-wrap > h1:first-of-type{margin-top:0}
+
+/* FOOTER (mirrors index.html) */
+footer{border-top:1px solid var(--border);padding:44px 0 36px}
+.foot-top{display:flex;justify-content:space-between;flex-wrap:wrap;gap:28px;margin-bottom:30px}
+.foot-brand{max-width:300px}
+.foot-brand .brand{font-size:18px;margin-bottom:12px}
+.foot-brand p{font-size:14px;color:var(--ink3);line-height:1.6}
+.foot-cols{display:flex;gap:54px;flex-wrap:wrap}
+.foot-col h4{font-size:13px;font-weight:700;color:var(--ink);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+.foot-col a{display:block;font-size:14px;color:var(--ink2);margin-bottom:10px;transition:color .15s}
+.foot-col a:hover{color:var(--blue)}
+.foot-bottom{border-top:1px solid var(--border);padding-top:24px;text-align:center;font-size:13px;color:var(--ink3)}
+.foot-bottom a{color:var(--blue);font-weight:600}
+
+@media(max-width:600px){
+  .doc-hero h1{font-size:28px}
+  .doc-wrap h1{font-size:22px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container nav-inner">
+    <a href="index.html#top" class="brand">VEXI</a>
+    <div class="nav-center">
+      <a href="index.html#features">Features</a>
+      <a href="docs.html" class="active">Docs</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#contact">Contact</a>
+    </div>
+    <div class="nav-links">
+      <a href="https://github.com/Elomami1976/vexi" class="nav-gh" target="_blank">
+        <svg viewBox="0 0 24 24"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<span id="top"></span>
+
+<header class="doc-hero">
+  <div class="container">
+    <div class="tag">Documentation</div>
+    <h1>Everything you need to run Vexi</h1>
+    <p>Install, connect an AI provider, manage skills and MCP servers, and fix the most common issues — in five languages.</p>
+  </div>
+</header>
+
+<div class="lang-jump">
+  <a href="#english">English</a>
+  <a href="#العربية">العربية</a>
+  <a href="#français">Français</a>
+  <a href="#español">Español</a>
+  <a href="#português">Português</a>
+</div>
+
+<div class="container">
+  <div class="doc-wrap">
+<h1>Vexi — Documentation</h1>
+<blockquote>
+<p>Free, open-source AI coding agent for your terminal.
+One guide, five languages. Commands are universal (English); only the prose is translated.
+GitHub: <a href="https://github.com/Elomami1976/vexi">https://github.com/Elomami1976/vexi</a> · Site: <a href="https://vexi.pro">https://vexi.pro</a></p>
+</blockquote>
+<p><strong>Languages in this file:</strong> <a href="#english">English</a> · <a href="#%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9">العربية</a> · <a href="#fran%C3%A7ais">Français</a> · <a href="#espa%C3%B1ol">Español</a> · <a href="#portugu%C3%AAs">Português</a></p>
+<div class="doc-lang" lang="en" dir="ltr">
+<hr>
+<hr>
+<p><a id="english"></a></p>
+<h1>🇬🇧 English</h1>
+<h2>1. What Vexi is (and what it is not)</h2>
+<p>Vexi is the <strong>agent</strong> — the tool that reads your files, writes code and chats in your terminal. It has <strong>no AI brain of its own.</strong> It connects to a model that lives elsewhere (OpenRouter, Groq, DeepSeek…) using an API key.</p>
+<blockquote>
+<p><strong>Mental model:</strong> Think of a web browser. Chrome contains no websites — it just <em>connects</em> to them. Vexi is the same: it contains no AI, it connects to one.</p>
+</blockquote>
+<p>There are <strong>two kinds of &quot;free&quot;</strong> here, and mixing them up causes most early confusion:</p>
+<ul>
+<li><strong>Vexi the tool</strong> → free (open source, installed free via npm).</li>
+<li><strong>The AI model</strong> → free only if the provider you connect offers a free tier.</li>
+</ul>
+<h2>2. Install &amp; update</h2>
+<p>You need Node.js installed (which includes npm). Then install Vexi globally:</p>
+<pre><code>npm install -g vexi-cli
+</code></pre>
+<p>To update to the latest version:</p>
+<pre><code>npm install -g vexi-cli@latest
+</code></pre>
+<blockquote>
+<p>⚠️ <strong>Windows: <code>vexi update</code> may fail.</strong> You may see <code>spawn EINVAL</code> when running <code>vexi update</code>. This is a known Node.js behavior on recent versions. The reliable workaround is to run the npm command directly (above) instead of <code>vexi update</code> — typed in your terminal, it always works.</p>
+</blockquote>
+<p>Check your installed version anytime:</p>
+<pre><code>vexi --version
+</code></pre>
+<h2>3. Connect an AI with <code>vexi setup</code></h2>
+<p><code>vexi setup</code> is the clean, recommended way to configure your AI. It starts from the endpoint <strong>URL</strong>, so there is no guessing — it detects the provider, fetches the live model list, and lets you pick one.</p>
+<pre><code>vexi setup
+</code></pre>
+<p>It asks three things, in order — <strong>URL → key → model</strong>:</p>
+<pre><code>? Paste your endpoint URL  › https://openrouter.ai/api/v1
+  Detected: OpenRouter
+? Paste your API key       › sk-or-...
+  Fetching available models…
+? Choose a model           › deepseek/deepseek-chat-v3:free
+  ✓ Saved — run `vexi` to start
+</code></pre>
+<blockquote>
+<p>💡 <strong>Why setup beats pasting a key:</strong> the first-run flow tries to <em>guess</em> your provider from the key&#39;s prefix, which is ambiguous (<code>sk-</code> could be OpenAI, DeepSeek or Kimi). <code>vexi setup</code> removes the guessing and shows you the real model list. Use it whenever you set up or switch providers.</p>
+</blockquote>
+<h2>4. Provider endpoint URLs</h2>
+<p>An endpoint URL is <strong>not a page you open in a browser</strong> — it is the address you paste into <code>vexi setup</code>. You never <em>see</em> it on the provider&#39;s website; you get your <strong>key</strong> from the website and the <strong>URL</strong> from the table below (or the provider&#39;s docs).</p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Endpoint URL</th>
+<th>Free tier?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>OpenRouter</td>
+<td><code>https://openrouter.ai/api/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Groq</td>
+<td><code>https://api.groq.com/openai/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>DeepSeek</td>
+<td><code>https://api.deepseek.com/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Google Gemini</td>
+<td><code>https://generativelanguage.googleapis.com/v1beta/openai/</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Cerebras</td>
+<td><code>https://api.cerebras.ai/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Ollama (local)</td>
+<td><code>http://localhost:11434/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Anthropic (Claude)</td>
+<td><code>https://api.anthropic.com/v1</code></td>
+<td>✕</td>
+</tr>
+<tr>
+<td>OpenAI</td>
+<td><code>https://api.openai.com/v1</code></td>
+<td>✕</td>
+</tr>
+<tr>
+<td>Kimi (Moonshot) — intl</td>
+<td><code>https://api.moonshot.ai/v1</code></td>
+<td>trial</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 <strong>Simplest path — one key for everything:</strong> with a single <strong>OpenRouter</strong> key you can reach GLM, DeepSeek, Kimi, Claude, Gemini and more — just change the model. Stay on <code>https://openrouter.ai/api/v1</code> and you&#39;ll rarely touch <code>vexi setup</code> again.</p>
+</blockquote>
+<blockquote>
+<p>⚠️ <strong>Kimi: match key and region.</strong> Kimi (Moonshot) has two separate regions. A key from <code>platform.kimi.ai</code> only works with <code>api.moonshot.ai</code>; a key from <code>platform.moonshot.cn</code> only works with <code>api.moonshot.cn</code>. Mixing them causes an endless &quot;re-enter your key&quot; loop.</p>
+</blockquote>
+<h2>5. Choosing free vs paid models</h2>
+<p>On OpenRouter, models ending in <code>:free</code> cost nothing. Everything else charges your credits per token.</p>
+<blockquote>
+<p>💡 <strong>Rule:</strong> only pick models ending in <code>:free</code>, or use a provider&#39;s free tier (Groq, Gemini, Cerebras). Then you never spend money.</p>
+</blockquote>
+<p>The trade-off: free models are weaker. They may <strong>invent files that don&#39;t exist</strong>, drift between languages, or ignore instructions. If a model hallucinates content or won&#39;t follow your rules, that&#39;s the <em>model</em>, not Vexi — switch to a stronger one (DeepSeek&#39;s free tier is a good step up; GLM 5.2 is a low-cost paid option).</p>
+<h2>6. <code>vexi</code> vs <code>vexi setup</code> — daily use</h2>
+<p><code>vexi setup</code> <strong>configures</strong> (which AI to use). <code>vexi</code> <strong>uses</strong> it (chat and code). You configure once; you run many times. Your config is saved and persists — you do <em>not</em> run setup before every session.</p>
+<pre><code># once (or when switching models)
+vexi setup
+
+# every time you want to work
+vexi
+</code></pre>
+<p>Running <code>vexi</code> starts the interactive chat. The status line shows your current setup at a glance:</p>
+<pre><code>project salik · provider OpenRouter · model deepseek/deepseek-chat-v3:free · lang en
+</code></pre>
+<p>At the <code>&gt;</code> prompt, type a request in plain language. In-session commands include <code>/help /model /clear /undo /redo /history /push /exit</code>.</p>
+<h2>7. Switching provider or model</h2>
+<table>
+<thead>
+<tr>
+<th>I want to…</th>
+<th>Do this</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Switch to a new provider</td>
+<td><code>vexi setup</code></td>
+</tr>
+<tr>
+<td>Switch model, same provider</td>
+<td><code>/model &lt;id&gt;</code></td>
+</tr>
+<tr>
+<td>Just use what&#39;s configured</td>
+<td><code>vexi</code></td>
+</tr>
+</tbody></table>
+<p>Inside a chat session, swap the model instantly without re-entering your key:</p>
+<pre><code>/model z-ai/glm-5.2
+</code></pre>
+<blockquote>
+<p>⚠️ <strong>Note:</strong> <code>/model</code> accepts any string without checking it against the live list — a typo won&#39;t complain until the API rejects your next message. Copy the exact slug (the <code>:free</code> suffix and any <code>vendor/</code> prefix must match).</p>
+</blockquote>
+<h2>8. Custom skills (project rules)</h2>
+<p>Skills are plain markdown files in <code>.vexi/skills/</code> inside your project. On every chat session they&#39;re injected as rules the model must follow — perfect for &quot;always use Windows commands&quot; or &quot;reply in Arabic&quot;. Note <code>.vexi/skills</code> is <strong>two nested folders</strong>, and each skill file must end in <code>.md</code>.</p>
+<p><strong>Manage skills:</strong></p>
+<pre><code>vexi skill add ./my-rules.md              # from a local file
+vexi skill add https://github.com/u/repo  # from a GitHub repo
+vexi skill list                           # show active skills
+vexi skill remove my-rules                # remove by NAME (no .md)
+</code></pre>
+<blockquote>
+<p>⚠️ <strong>Create the file, don&#39;t paste commands into it.</strong> On Windows, the reliable way to create a skill is to run a command that <em>writes the file for you</em> — don&#39;t open Notepad and paste the terminal command into the file. Everything between <code>@&#39;</code> and <code>&#39;@</code> below is the file content; the rest is the command that saves it.</p>
+</blockquote>
+<pre><code class="language-powershell">New-Item -ItemType Directory -Force -Path &quot;.vexi\skills&quot; | Out-Null
+@&#39;
+# Project Conventions
+- Use Windows PowerShell commands only (no touch, ls, rm, cat, &amp;&amp;).
+- Reply in Arabic by default.
+- Explain only the real files in this project; never invent files.
+&#39;@ | Set-Content -Path &quot;.vexi\skills\rules.md&quot; -Encoding UTF8
+</code></pre>
+<h2>9. Adding MCP servers</h2>
+<p>MCP servers give the model extra tools. Vexi&#39;s MCP client runs a <strong>local command</strong> (stdio). The general form is:</p>
+<pre><code>vexi mcp add &lt;name&gt; &lt;command&gt; [args...]
+vexi mcp list
+vexi mcp remove &lt;name&gt;
+</code></pre>
+<p>A <strong>remote</strong> MCP server (a URL, like Higgsfield) can&#39;t be added directly, because Vexi only speaks stdio. Use the <code>mcp-remote</code> bridge — install it once, then point Vexi at it:</p>
+<pre><code>npm install -g mcp-remote
+vexi mcp add higgsfield mcp-remote https://mcp.higgsfield.ai/mcp
+</code></pre>
+<blockquote>
+<p>❌ <strong>Error: <code>unknown option &#39;-y&#39;</code>.</strong> If you use <code>npx -y</code>, Vexi&#39;s parser grabs the <code>-y</code> as its own flag and fails. Fix: install <code>mcp-remote</code> globally (above) so you drop <code>npx -y</code> entirely — or pass <code>--</code> before it: <code>vexi mcp add name npx -- -y mcp-remote &lt;url&gt;</code>.</p>
+</blockquote>
+<p>On first launch after adding, the bridge opens your browser to log in and authorize. Note: driving many tools well needs a capable model — free models often struggle, and media results come back as URLs in the terminal.</p>
+<h2>10. Explain code in your language</h2>
+<p><code>vexi explain</code> writes an explanation of a file or folder. Arabic opens as a clean right-to-left HTML page in your browser:</p>
+<pre><code>vexi explain index.html --ar     # Arabic (opens RTL HTML)
+vexi explain src/ --fr           # French
+vexi explain app.py --es         # Spanish
+</code></pre>
+<blockquote>
+<p>💡 <strong>The flag wins — always pass it.</strong> The language flag (<code>--ar</code>) overrides everything else. Without it, the command falls back to your session language and a weak model may drift to another language. Note: skills do <em>not</em> control <code>explain</code> — only the flag does.</p>
+</blockquote>
+<h2>11. Replay — export a session</h2>
+<p>Every chat is recorded to <code>.vexi/sessions/</code>. <code>vexi replay</code> does <strong>not</strong> re-run anything — it turns a saved session into a watchable, animated HTML page (play/pause, speed controls, an &quot;export video&quot; button). Great for demos.</p>
+<pre><code>vexi replay              # list recorded sessions
+vexi replay --export     # export latest as animated HTML
+vexi replay --export --lang ar   # right-to-left Arabic replay
+</code></pre>
+<h2>12. Inside the <code>.vexi</code> folder</h2>
+<p>Each project gets a <code>.vexi/</code> folder. Here&#39;s what lives in it:</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>sessions/</code></td>
+<td>Recorded chats — read by <code>vexi replay</code>.</td>
+</tr>
+<tr>
+<td><code>snapshots/</code></td>
+<td>Undo/redo history. Vexi copies files here before editing, so <code>/undo</code> works without git. Don&#39;t delete while working.</td>
+</tr>
+<tr>
+<td><code>skills/</code></td>
+<td>Your convention files (<code>.md</code>) — injected into every session.</td>
+</tr>
+<tr>
+<td><code>project.json</code></td>
+<td>Project scan data and config.</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 <strong>Empty skills folder is normal.</strong> If you remove your last skill, the <code>skills</code> folder becomes empty — that&#39;s expected, not a bug. Re-add a skill to bring it back.</p>
+</blockquote>
+<h2>13. Troubleshooting</h2>
+<ul>
+<li>❌ <strong><code>spawn EINVAL</code> on <code>vexi update</code> (Windows)</strong> — run <code>npm install -g vexi-cli@latest</code> directly in your terminal instead of <code>vexi update</code>.</li>
+<li>❌ <strong>Endless &quot;re-enter your API key?&quot;</strong> — the provider rejected the key. Most common cause: wrong endpoint for that key (e.g. Kimi <code>.ai</code> key with the <code>.cn</code> URL). Re-run <code>vexi setup</code> with the URL that matches your key&#39;s region, or check the key has credit.</li>
+<li>❌ <strong><code>&#39;touch&#39; is not recognized</code> (Windows)</strong> — the model emitted a Unix command. Add a skill telling it to use Windows PowerShell commands only. The file is often still created by the second, valid command, so check before assuming it failed.</li>
+<li>❌ <strong>Arabic shows as boxes (□□□)</strong> — not a bug; the classic Windows PowerShell console lacks Arabic glyphs. Read Arabic via <code>vexi explain … --ar</code> (opens in the browser, renders perfectly), or use the modern Windows Terminal app.</li>
+<li>❌ <strong>The model invents files / changes language</strong> — this is a weak free model, not Vexi. Switch to a stronger model with <code>vexi setup</code> or <code>/model</code> (e.g. <code>deepseek/deepseek-chat-v3:free</code> or paid <code>z-ai/glm-5.2</code>).</li>
+<li>❌ <strong><code>unknown option &#39;-y&#39;</code> when adding MCP</strong> — install <code>mcp-remote</code> globally and drop <code>npx -y</code>, or insert <code>--</code> before the passthrough args.</li>
+<li>⚠️ <strong>Keep your keys private</strong> — an API key is a password. Never share it in screenshots or screen recordings. If a key is ever exposed, delete it in the provider&#39;s console and create a new one.</li>
+</ul>
+
+</div>
+<div class="doc-lang" lang="ar" dir="rtl">
+<hr>
+<hr>
+<p><a id="العربية"></a></p>
+<h1>🇸🇦 العربية</h1>
+<h2>١. ما هو Vexi (وما ليس هو)</h2>
+<p>‏Vexi هو <strong>الوكيل</strong> — الأداة التي تقرأ ملفاتك وتكتب الشيفرة وتحادثك في الطرفية. لكنه <strong>لا يملك عقلاً ذكياً خاصاً به.</strong> بل يتصل بنموذج موجود في مكان آخر (OpenRouter أو Groq أو DeepSeek…) باستخدام مفتاح API.</p>
+<blockquote>
+<p><strong>الفكرة الأساسية:</strong> تخيّل متصفح الويب. كروم لا يحتوي على أي موقع — بل <em>يتصل</em> بالمواقع. Vexi مثله تماماً: لا يحتوي على ذكاء اصطناعي، بل يتصل به.</p>
+</blockquote>
+<p>هناك <strong>نوعان من «المجاني»</strong> هنا، والخلط بينهما هو سبب معظم الالتباس في البداية:</p>
+<ul>
+<li><strong>أداة Vexi</strong> ← مجانية (مفتوحة المصدر، تُثبَّت مجاناً عبر npm).</li>
+<li><strong>نموذج الذكاء الاصطناعي</strong> ← مجاني فقط إذا كان المزوّد الذي تتصل به يقدّم باقة مجانية.</li>
+</ul>
+<h2>٢. التثبيت والتحديث</h2>
+<p>تحتاج إلى تثبيت Node.js (ويأتي معه npm). ثم ثبّت Vexi بشكل عام:</p>
+<pre><code>npm install -g vexi-cli
+</code></pre>
+<p>للتحديث إلى أحدث إصدار:</p>
+<pre><code>npm install -g vexi-cli@latest
+</code></pre>
+<blockquote>
+<p>⚠️ <strong>ويندوز: قد يفشل <code>vexi update</code>.</strong> قد يظهر لك <code>spawn EINVAL</code> عند تشغيل <code>vexi update</code>. هذا سلوك معروف في إصدارات Node.js الحديثة. الحل الموثوق هو تشغيل أمر npm مباشرةً (بالأعلى) بدلاً من <code>vexi update</code> — فهو يعمل دائماً عند كتابته في الطرفية.</p>
+</blockquote>
+<p>تحقّق من الإصدار المثبّت في أي وقت:</p>
+<pre><code>vexi --version
+</code></pre>
+<h2>٣. وصل نموذج ذكاء عبر <code>vexi setup</code></h2>
+<p>‏<code>vexi setup</code> هو الطريقة النظيفة والمُوصى بها لإعداد الذكاء الاصطناعي. يبدأ من <strong>رابط</strong> نقطة النهاية، فلا تخمين — يتعرّف على المزوّد، ويجلب قائمة النماذج الحيّة، ويتيح لك الاختيار.</p>
+<pre><code>vexi setup
+</code></pre>
+<p>يسألك عن ثلاثة أشياء بالترتيب — <strong>الرابط ← المفتاح ← النموذج</strong>:</p>
+<pre><code>? Paste your endpoint URL  › https://openrouter.ai/api/v1
+  Detected: OpenRouter
+? Paste your API key       › sk-or-...
+  Fetching available models…
+? Choose a model           › deepseek/deepseek-chat-v3:free
+  ✓ Saved — run `vexi` to start
+</code></pre>
+<blockquote>
+<p>💡 <strong>لماذا setup أفضل من لصق مفتاح:</strong> يحاول التدفق عند أول تشغيل أن <em>يخمّن</em> المزوّد من بادئة المفتاح، وهي ملتبسة (<code>sk-</code> قد تكون OpenAI أو DeepSeek أو Kimi). أمّا <code>vexi setup</code> فيلغي التخمين ويعرض قائمة النماذج الحقيقية. استخدمه كلما أعددت أو بدّلت مزوّداً.</p>
+</blockquote>
+<h2>٤. روابط نقاط النهاية للمزوّدين</h2>
+<p>رابط نقطة النهاية <strong>ليس صفحة تفتحها في المتصفح</strong> — بل هو العنوان الذي تلصقه في <code>vexi setup</code>. أنت لا <em>ترى</em> هذا الرابط على موقع المزوّد؛ تحصل على <strong>المفتاح</strong> من الموقع، وعلى <strong>الرابط</strong> من الجدول أدناه (أو من توثيق المزوّد).</p>
+<table>
+<thead>
+<tr>
+<th>المزوّد</th>
+<th>رابط نقطة النهاية</th>
+<th>باقة مجانية؟</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>OpenRouter</td>
+<td><code>https://openrouter.ai/api/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Groq</td>
+<td><code>https://api.groq.com/openai/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>DeepSeek</td>
+<td><code>https://api.deepseek.com/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Google Gemini</td>
+<td><code>https://generativelanguage.googleapis.com/v1beta/openai/</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Cerebras</td>
+<td><code>https://api.cerebras.ai/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Ollama (محلي)</td>
+<td><code>http://localhost:11434/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Anthropic (Claude)</td>
+<td><code>https://api.anthropic.com/v1</code></td>
+<td>✕</td>
+</tr>
+<tr>
+<td>OpenAI</td>
+<td><code>https://api.openai.com/v1</code></td>
+<td>✕</td>
+</tr>
+<tr>
+<td>Kimi (Moonshot) — دولي</td>
+<td><code>https://api.moonshot.ai/v1</code></td>
+<td>تجريبي</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 <strong>أبسط طريق — مفتاح واحد لكل شيء:</strong> بمفتاح <strong>OpenRouter</strong> واحد يمكنك الوصول إلى GLM وDeepSeek وKimi وClaude وGemini وغيرها — فقط غيّر النموذج. ابقَ على <code>https://openrouter.ai/api/v1</code> ونادراً ما ستحتاج إلى <code>vexi setup</code> مجدداً.</p>
+</blockquote>
+<blockquote>
+<p>⚠️ <strong>Kimi: طابِق المفتاح والمنطقة.</strong> لدى Kimi (Moonshot) منطقتان منفصلتان. المفتاح من <code>platform.kimi.ai</code> يعمل فقط مع <code>api.moonshot.ai</code>؛ والمفتاح من <code>platform.moonshot.cn</code> يعمل فقط مع <code>api.moonshot.cn</code>. الخلط بينهما يسبّب حلقة لا تنتهي من «أعد إدخال مفتاحك».</p>
+</blockquote>
+<h2>٥. اختيار النماذج المجانية مقابل المدفوعة</h2>
+<p>في OpenRouter، النماذج المنتهية بـ <code>:free</code> مجانية تماماً. وما عداها يخصم من رصيدك لكل رمز.</p>
+<blockquote>
+<p>💡 <strong>القاعدة:</strong> اختر فقط النماذج المنتهية بـ <code>:free</code>، أو استخدم الباقة المجانية لمزوّد (Groq أو Gemini أو Cerebras). عندها لن تنفق أي مال.</p>
+</blockquote>
+<p>المقابل: النماذج المجانية أضعف. قد <strong>تخترع ملفات غير موجودة</strong>، أو تتنقل بين اللغات، أو تتجاهل التعليمات. إذا هلوس نموذج بمحتوى أو رفض اتّباع قواعدك، فالمشكلة في <em>النموذج</em> لا في Vexi — انتقل إلى نموذج أقوى (باقة DeepSeek المجانية خطوة جيدة؛ وGLM 5.2 خيار مدفوع منخفض التكلفة).</p>
+<h2>٦. <code>vexi</code> مقابل <code>vexi setup</code> — الاستخدام اليومي</h2>
+<p>‏<code>vexi setup</code> <strong>يُعِدّ</strong> (أي ذكاء تستخدم). و<code>vexi</code> <strong>يستخدمه</strong> (المحادثة والبرمجة). تُعِدّ مرة واحدة، وتشغّل مرات كثيرة. إعدادك محفوظ ودائم — <em>لا</em> تشغّل الإعداد قبل كل جلسة.</p>
+<pre><code># once (or when switching models)
+vexi setup
+
+# every time you want to work
+vexi
+</code></pre>
+<p>تشغيل <code>vexi</code> يبدأ المحادثة التفاعلية. يعرض سطر الحالة إعدادك الحالي بلمحة:</p>
+<pre><code>project salik · provider OpenRouter · model deepseek/deepseek-chat-v3:free · lang en
+</code></pre>
+<p>عند محث <code>&gt;</code>، اكتب طلبك بلغة عادية. تشمل أوامر الجلسة <code>/help /model /clear /undo /redo /history /push /exit</code>.</p>
+<h2>٧. تبديل المزوّد أو النموذج</h2>
+<table>
+<thead>
+<tr>
+<th>أريد أن…</th>
+<th>افعل هذا</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>التبديل إلى مزوّد جديد</td>
+<td><code>vexi setup</code></td>
+</tr>
+<tr>
+<td>تبديل النموذج، نفس المزوّد</td>
+<td><code>/model &lt;id&gt;</code></td>
+</tr>
+<tr>
+<td>استخدام المُهيّأ فقط</td>
+<td><code>vexi</code></td>
+</tr>
+</tbody></table>
+<p>داخل جلسة المحادثة، بدّل النموذج فوراً دون إعادة إدخال مفتاحك:</p>
+<pre><code>/model z-ai/glm-5.2
+</code></pre>
+<blockquote>
+<p>⚠️ <strong>ملاحظة:</strong> يقبل <code>/model</code> أي نص دون التحقق منه مقابل القائمة الحيّة — الخطأ المطبعي لن يظهر حتى ترفض الواجهة رسالتك التالية. انسخ المعرّف بدقّة (يجب أن تتطابق لاحقة <code>:free</code> وأي بادئة <code>vendor/</code>).</p>
+</blockquote>
+<h2>٨. المهارات المخصّصة (قواعد المشروع)</h2>
+<p>المهارات ملفات ماركداون بسيطة داخل <code>.vexi/skills/</code> في مشروعك. تُحقَن في كل جلسة كقواعد يجب على النموذج اتّباعها — مثالية لـ«استخدم أوامر ويندوز دائماً» أو «أجب بالعربية». لاحظ أن <code>.vexi/skills</code> هو <strong>مجلدان متداخلان</strong>، وكل ملف مهارة يجب أن ينتهي بـ <code>.md</code>.</p>
+<p><strong>إدارة المهارات:</strong></p>
+<pre><code>vexi skill add ./my-rules.md              # from a local file
+vexi skill add https://github.com/u/repo  # from a GitHub repo
+vexi skill list                           # show active skills
+vexi skill remove my-rules                # remove by NAME (no .md)
+</code></pre>
+<blockquote>
+<p>⚠️ <strong>أنشئ الملف، ولا تلصق الأوامر بداخله.</strong> على ويندوز، الطريقة الموثوقة لإنشاء مهارة هي تشغيل أمر <em>يكتب الملف نيابةً عنك</em> — لا تفتح المفكرة وتلصق أمر الطرفية داخل الملف. كل ما بين <code>@&#39;</code> و<code>&#39;@</code> أدناه هو محتوى الملف؛ والباقي هو الأمر الذي يحفظه.</p>
+</blockquote>
+<pre><code class="language-powershell">New-Item -ItemType Directory -Force -Path &quot;.vexi\skills&quot; | Out-Null
+@&#39;
+# Project Conventions
+- Use Windows PowerShell commands only (no touch, ls, rm, cat, &amp;&amp;).
+- Reply in Arabic by default.
+- Explain only the real files in this project; never invent files.
+&#39;@ | Set-Content -Path &quot;.vexi\skills\rules.md&quot; -Encoding UTF8
+</code></pre>
+<h2>٩. إضافة خوادم MCP</h2>
+<p>تمنح خوادم MCP النموذج أدوات إضافية. عميل MCP في Vexi يشغّل <strong>أمراً محلياً</strong> (stdio). الصيغة العامة:</p>
+<pre><code>vexi mcp add &lt;name&gt; &lt;command&gt; [args...]
+vexi mcp list
+vexi mcp remove &lt;name&gt;
+</code></pre>
+<p>لا يمكن إضافة خادم MCP <strong>بعيد</strong> (رابط، مثل Higgsfield) مباشرةً، لأن Vexi يتحدّث stdio فقط. استخدم جسر <code>mcp-remote</code> — ثبّته مرة واحدة، ثم وجّه Vexi إليه:</p>
+<pre><code>npm install -g mcp-remote
+vexi mcp add higgsfield mcp-remote https://mcp.higgsfield.ai/mcp
+</code></pre>
+<blockquote>
+<p>❌ <strong>خطأ: <code>unknown option &#39;-y&#39;</code>.</strong> إذا استخدمت <code>npx -y</code>، يلتقط محلّل Vexi الرمز <code>-y</code> كخيار خاص به فيفشل. الحل: ثبّت <code>mcp-remote</code> بشكل عام (بالأعلى) لتستغني عن <code>npx -y</code> — أو ضع <code>--</code> قبله: <code>vexi mcp add name npx -- -y mcp-remote &lt;url&gt;</code>.</p>
+</blockquote>
+<p>عند أول تشغيل بعد الإضافة، يفتح الجسر متصفحك لتسجيل الدخول والتفويض. ملاحظة: قيادة أدوات كثيرة بكفاءة تحتاج نموذجاً قوياً — النماذج المجانية غالباً ما تتعثّر، ونتائج الوسائط تعود كروابط في الطرفية.</p>
+<h2>١٠. شرح الشيفرة بلغتك</h2>
+<p>‏<code>vexi explain</code> يكتب شرحاً لملف أو مجلد. تُفتح العربية كصفحة HTML نظيفة من اليمين إلى اليسار في متصفحك:</p>
+<pre><code>vexi explain index.html --ar     # Arabic (opens RTL HTML)
+vexi explain src/ --fr           # French
+vexi explain app.py --es         # Spanish
+</code></pre>
+<blockquote>
+<p>💡 <strong>العَلَم هو الأقوى — مرّره دائماً.</strong> عَلَم اللغة (<code>--ar</code>) يتجاوز كل شيء آخر. بدونه يعود الأمر إلى لغة جلستك، وقد ينحرف نموذج ضعيف إلى لغة أخرى. ملاحظة: المهارات <em>لا</em> تتحكم في <code>explain</code> — العَلَم وحده يفعل.</p>
+</blockquote>
+<h2>١١. Replay — تصدير جلسة</h2>
+<p>تُسجَّل كل محادثة في <code>.vexi/sessions/</code>. <code>vexi replay</code> <strong>لا</strong> يعيد تشغيل أي شيء — بل يحوّل جلسة محفوظة إلى صفحة HTML متحرّكة قابلة للمشاهدة (تشغيل/إيقاف، تحكّم بالسرعة، زر «تصدير فيديو»). ممتاز للعروض.</p>
+<pre><code>vexi replay              # list recorded sessions
+vexi replay --export     # export latest as animated HTML
+vexi replay --export --lang ar   # right-to-left Arabic replay
+</code></pre>
+<h2>١٢. داخل مجلد <code>.vexi</code></h2>
+<p>يحصل كل مشروع على مجلد <code>.vexi/</code>. إليك ما بداخله:</p>
+<table>
+<thead>
+<tr>
+<th>العنصر</th>
+<th>ما هو</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>sessions/</code></td>
+<td>محادثات مسجّلة — يقرؤها <code>vexi replay</code>.</td>
+</tr>
+<tr>
+<td><code>snapshots/</code></td>
+<td>سجل التراجع/الإعادة. ينسخ Vexi الملفات هنا قبل التعديل، فيعمل <code>/undo</code> دون git. لا تحذفه أثناء العمل.</td>
+</tr>
+<tr>
+<td><code>skills/</code></td>
+<td>ملفات قواعدك (<code>.md</code>) — تُحقَن في كل جلسة.</td>
+</tr>
+<tr>
+<td><code>project.json</code></td>
+<td>بيانات فحص المشروع والإعدادات.</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 <strong>مجلد المهارات الفارغ أمر طبيعي.</strong> إذا أزلت آخر مهارة لديك، يصبح مجلد <code>skills</code> فارغاً — هذا متوقّع وليس خطأً. أعِد إضافة مهارة لاستعادته.</p>
+</blockquote>
+<h2>١٣. حل المشكلات</h2>
+<ul>
+<li>❌ <strong><code>spawn EINVAL</code> عند <code>vexi update</code> (ويندوز)</strong> — شغّل <code>npm install -g vexi-cli@latest</code> مباشرةً في الطرفية بدلاً من <code>vexi update</code>.</li>
+<li>❌ <strong>حلقة «أعد إدخال مفتاحك؟» اللانهائية</strong> — رفض المزوّد المفتاح. السبب الأشهر: نقطة نهاية خاطئة لهذا المفتاح (مثلاً مفتاح Kimi <code>.ai</code> مع رابط <code>.cn</code>). أعد تشغيل <code>vexi setup</code> برابط يطابق منطقة مفتاحك، أو تحقّق من وجود رصيد.</li>
+<li>❌ <strong><code>&#39;touch&#39; غير معروف</code> (ويندوز)</strong> — أصدر النموذج أمر يونكس. أضِف مهارة تطلب استخدام أوامر PowerShell على ويندوز فقط. غالباً يُنشأ الملف بالأمر الثاني الصالح، فتحقّق قبل افتراض الفشل.</li>
+<li>❌ <strong>العربية تظهر كمربّعات (□□□)</strong> — ليس خطأً؛ طرفية Windows PowerShell الكلاسيكية تفتقر إلى محارف العربية. اقرأ العربية عبر <code>vexi explain … --ar</code> (تُفتح في المتصفح وتُعرض بإتقان)، أو استخدم تطبيق Windows Terminal الحديث.</li>
+<li>❌ <strong>النموذج يخترع ملفات / يغيّر اللغة</strong> — هذه مشكلة نموذج مجاني ضعيف، لا Vexi. انتقل إلى نموذج أقوى عبر <code>vexi setup</code> أو <code>/model</code> (مثل <code>deepseek/deepseek-chat-v3:free</code> أو المدفوع <code>z-ai/glm-5.2</code>).</li>
+<li>❌ <strong><code>unknown option &#39;-y&#39;</code> عند إضافة MCP</strong> — ثبّت <code>mcp-remote</code> بشكل عام واستغنِ عن <code>npx -y</code>، أو أدرج <code>--</code> قبل الوسائط المُمرَّرة.</li>
+<li>⚠️ <strong>احفظ مفاتيحك خاصة</strong> — مفتاح API كلمة مرور. لا تشاركه أبداً في لقطات الشاشة أو تسجيلات الشاشة. إذا انكشف مفتاح، احذفه من لوحة تحكم المزوّد وأنشئ آخر جديداً.</li>
+</ul>
+
+</div>
+<div class="doc-lang" lang="fr" dir="ltr">
+<hr>
+<hr>
+<p><a id="français"></a></p>
+<h1>🇫🇷 Français</h1>
+<h2>1. Ce qu&#39;est Vexi (et ce qu&#39;il n&#39;est pas)</h2>
+<p>Vexi est l&#39;<strong>agent</strong> — l&#39;outil qui lit vos fichiers, écrit du code et dialogue dans votre terminal. Il n&#39;a <strong>aucun cerveau IA propre.</strong> Il se connecte à un modèle hébergé ailleurs (OpenRouter, Groq, DeepSeek…) via une clé API.</p>
+<blockquote>
+<p><strong>Modèle mental :</strong> pensez à un navigateur. Chrome ne contient aucun site — il s&#39;y <em>connecte</em>. Vexi, c&#39;est pareil : il ne contient aucune IA, il s&#39;y connecte.</p>
+</blockquote>
+<p>Il y a <strong>deux sortes de « gratuit »</strong> ici, et les confondre est la source de la plupart des malentendus au début :</p>
+<ul>
+<li><strong>Vexi l&#39;outil</strong> → gratuit (open source, installé gratuitement via npm).</li>
+<li><strong>Le modèle d&#39;IA</strong> → gratuit seulement si le fournisseur choisi propose une offre gratuite.</li>
+</ul>
+<h2>2. Installer et mettre à jour</h2>
+<p>Node.js doit être installé (npm est inclus). Installez ensuite Vexi globalement :</p>
+<pre><code>npm install -g vexi-cli
+</code></pre>
+<p>Pour passer à la dernière version :</p>
+<pre><code>npm install -g vexi-cli@latest
+</code></pre>
+<blockquote>
+<p>⚠️ <strong>Windows : <code>vexi update</code> peut échouer.</strong> Vous pouvez voir <code>spawn EINVAL</code> en lançant <code>vexi update</code>. C&#39;est un comportement connu des versions récentes de Node.js. La solution fiable : lancer la commande npm directement (ci-dessus) plutôt que <code>vexi update</code> — tapée dans le terminal, elle fonctionne toujours.</p>
+</blockquote>
+<p>Vérifiez votre version à tout moment :</p>
+<pre><code>vexi --version
+</code></pre>
+<h2>3. Connecter une IA avec <code>vexi setup</code></h2>
+<p><code>vexi setup</code> est la façon propre et recommandée de configurer votre IA. Elle part de l&#39;<strong>URL</strong> du point d&#39;accès : aucune devinette — elle détecte le fournisseur, récupère la liste des modèles en direct et vous laisse choisir.</p>
+<pre><code>vexi setup
+</code></pre>
+<p>Elle demande trois choses, dans l&#39;ordre — <strong>URL → clé → modèle</strong> :</p>
+<pre><code>? Paste your endpoint URL  › https://openrouter.ai/api/v1
+  Detected: OpenRouter
+? Paste your API key       › sk-or-...
+  Fetching available models…
+? Choose a model           › deepseek/deepseek-chat-v3:free
+  ✓ Saved — run `vexi` to start
+</code></pre>
+<blockquote>
+<p>💡 <strong>Pourquoi setup vaut mieux que coller une clé :</strong> le premier lancement tente de <em>deviner</em> le fournisseur d&#39;après le préfixe de la clé, ce qui est ambigu (<code>sk-</code> peut être OpenAI, DeepSeek ou Kimi). <code>vexi setup</code> supprime la devinette et affiche la vraie liste de modèles. Utilisez-le pour configurer ou changer de fournisseur.</p>
+</blockquote>
+<h2>4. URL des fournisseurs</h2>
+<p>Une URL de point d&#39;accès n&#39;est <strong>pas une page que l&#39;on ouvre dans un navigateur</strong> — c&#39;est l&#39;adresse à coller dans <code>vexi setup</code>. Vous ne la <em>voyez</em> pas sur le site du fournisseur ; vous obtenez la <strong>clé</strong> sur le site et l&#39;<strong>URL</strong> dans le tableau ci-dessous (ou la doc du fournisseur).</p>
+<table>
+<thead>
+<tr>
+<th>Fournisseur</th>
+<th>URL du point d&#39;accès</th>
+<th>Offre gratuite ?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>OpenRouter</td>
+<td><code>https://openrouter.ai/api/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Groq</td>
+<td><code>https://api.groq.com/openai/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>DeepSeek</td>
+<td><code>https://api.deepseek.com/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Google Gemini</td>
+<td><code>https://generativelanguage.googleapis.com/v1beta/openai/</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Cerebras</td>
+<td><code>https://api.cerebras.ai/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Ollama (local)</td>
+<td><code>http://localhost:11434/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Anthropic (Claude)</td>
+<td><code>https://api.anthropic.com/v1</code></td>
+<td>✕</td>
+</tr>
+<tr>
+<td>OpenAI</td>
+<td><code>https://api.openai.com/v1</code></td>
+<td>✕</td>
+</tr>
+<tr>
+<td>Kimi (Moonshot) — intl</td>
+<td><code>https://api.moonshot.ai/v1</code></td>
+<td>essai</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 <strong>Le plus simple — une clé pour tout :</strong> avec une seule clé <strong>OpenRouter</strong>, vous atteignez GLM, DeepSeek, Kimi, Claude, Gemini et plus — il suffit de changer de modèle. Restez sur <code>https://openrouter.ai/api/v1</code> et vous ne toucherez presque plus à <code>vexi setup</code>.</p>
+</blockquote>
+<blockquote>
+<p>⚠️ <strong>Kimi : clé et région assorties.</strong> Kimi (Moonshot) a deux régions distinctes. Une clé de <code>platform.kimi.ai</code> ne fonctionne qu&#39;avec <code>api.moonshot.ai</code> ; une clé de <code>platform.moonshot.cn</code> qu&#39;avec <code>api.moonshot.cn</code>. Les mélanger provoque une boucle sans fin « ressaisissez votre clé ».</p>
+</blockquote>
+<h2>5. Choisir entre modèles gratuits et payants</h2>
+<p>Sur OpenRouter, les modèles se terminant par <code>:free</code> ne coûtent rien. Tout le reste débite vos crédits par token.</p>
+<blockquote>
+<p>💡 <strong>Règle :</strong> choisissez uniquement des modèles finissant par <code>:free</code>, ou l&#39;offre gratuite d&#39;un fournisseur (Groq, Gemini, Cerebras). Vous ne dépenserez jamais rien.</p>
+</blockquote>
+<p>Le compromis : les modèles gratuits sont plus faibles. Ils peuvent <strong>inventer des fichiers inexistants</strong>, changer de langue ou ignorer les consignes. Si un modèle hallucine ou n&#39;obéit pas, c&#39;est le <em>modèle</em>, pas Vexi — passez à un modèle plus fort (l&#39;offre gratuite de DeepSeek est un bon palier ; GLM 5.2 est une option payante peu coûteuse).</p>
+<h2>6. <code>vexi</code> vs <code>vexi setup</code> — usage quotidien</h2>
+<p><code>vexi setup</code> <strong>configure</strong> (quelle IA utiliser). <code>vexi</code> l&#39;<strong>utilise</strong> (discuter et coder). On configure une fois ; on lance souvent. La config est sauvegardée et persiste — inutile de relancer setup avant chaque session.</p>
+<pre><code># once (or when switching models)
+vexi setup
+
+# every time you want to work
+vexi
+</code></pre>
+<p>Lancer <code>vexi</code> démarre le chat interactif. La ligne d&#39;état résume votre configuration :</p>
+<pre><code>project salik · provider OpenRouter · model deepseek/deepseek-chat-v3:free · lang en
+</code></pre>
+<p>À l&#39;invite <code>&gt;</code>, tapez une demande en langage naturel. Commandes de session : <code>/help /model /clear /undo /redo /history /push /exit</code>.</p>
+<h2>7. Changer de fournisseur ou de modèle</h2>
+<table>
+<thead>
+<tr>
+<th>Je veux…</th>
+<th>Faites</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Changer de fournisseur</td>
+<td><code>vexi setup</code></td>
+</tr>
+<tr>
+<td>Changer de modèle, même fournisseur</td>
+<td><code>/model &lt;id&gt;</code></td>
+</tr>
+<tr>
+<td>Utiliser la config actuelle</td>
+<td><code>vexi</code></td>
+</tr>
+</tbody></table>
+<p>Dans une session, changez de modèle instantanément sans ressaisir la clé :</p>
+<pre><code>/model z-ai/glm-5.2
+</code></pre>
+<blockquote>
+<p>⚠️ <strong>Note :</strong> <code>/model</code> accepte n&#39;importe quelle chaîne sans la vérifier — une faute ne se voit qu&#39;au rejet du message suivant par l&#39;API. Copiez le slug exact (le suffixe <code>:free</code> et tout préfixe <code>vendor/</code> doivent correspondre).</p>
+</blockquote>
+<h2>8. Skills personnalisés (règles projet)</h2>
+<p>Les skills sont de simples fichiers markdown dans <code>.vexi/skills/</code> de votre projet. À chaque session, ils sont injectés comme règles à suivre — idéal pour « toujours utiliser des commandes Windows » ou « répondre en arabe ». Notez que <code>.vexi/skills</code> est <strong>deux dossiers imbriqués</strong>, et chaque fichier doit finir en <code>.md</code>.</p>
+<p><strong>Gérer les skills :</strong></p>
+<pre><code>vexi skill add ./my-rules.md              # from a local file
+vexi skill add https://github.com/u/repo  # from a GitHub repo
+vexi skill list                           # show active skills
+vexi skill remove my-rules                # remove by NAME (no .md)
+</code></pre>
+<blockquote>
+<p>⚠️ <strong>Créez le fichier, n&#39;y collez pas de commandes.</strong> Sous Windows, la méthode fiable est de lancer une commande qui <em>écrit le fichier pour vous</em> — n&#39;ouvrez pas le Bloc-notes pour y coller la commande. Tout ce qui est entre <code>@&#39;</code> et <code>&#39;@</code> ci-dessous est le contenu ; le reste est la commande qui l&#39;enregistre.</p>
+</blockquote>
+<pre><code class="language-powershell">New-Item -ItemType Directory -Force -Path &quot;.vexi\skills&quot; | Out-Null
+@&#39;
+# Project Conventions
+- Use Windows PowerShell commands only (no touch, ls, rm, cat, &amp;&amp;).
+- Reply in Arabic by default.
+- Explain only the real files in this project; never invent files.
+&#39;@ | Set-Content -Path &quot;.vexi\skills\rules.md&quot; -Encoding UTF8
+</code></pre>
+<h2>9. Ajouter des serveurs MCP</h2>
+<p>Les serveurs MCP donnent des outils supplémentaires au modèle. Le client MCP de Vexi lance une <strong>commande locale</strong> (stdio). Forme générale :</p>
+<pre><code>vexi mcp add &lt;name&gt; &lt;command&gt; [args...]
+vexi mcp list
+vexi mcp remove &lt;name&gt;
+</code></pre>
+<p>Un serveur MCP <strong>distant</strong> (une URL, comme Higgsfield) ne peut pas être ajouté directement, car Vexi ne parle que stdio. Utilisez le pont <code>mcp-remote</code> — installez-le une fois, puis pointez Vexi dessus :</p>
+<pre><code>npm install -g mcp-remote
+vexi mcp add higgsfield mcp-remote https://mcp.higgsfield.ai/mcp
+</code></pre>
+<blockquote>
+<p>❌ <strong>Erreur : <code>unknown option &#39;-y&#39;</code>.</strong> Avec <code>npx -y</code>, l&#39;analyseur de Vexi prend <code>-y</code> pour sa propre option et échoue. Solution : installez <code>mcp-remote</code> globalement (ci-dessus) pour supprimer <code>npx -y</code> — ou mettez <code>--</code> avant : <code>vexi mcp add name npx -- -y mcp-remote &lt;url&gt;</code>.</p>
+</blockquote>
+<p>Au premier lancement après l&#39;ajout, le pont ouvre votre navigateur pour vous connecter et autoriser. Note : bien piloter de nombreux outils demande un modèle capable — les modèles gratuits peinent souvent, et les médias reviennent sous forme d&#39;URL dans le terminal.</p>
+<h2>10. Expliquer le code dans votre langue</h2>
+<p><code>vexi explain</code> rédige l&#39;explication d&#39;un fichier ou dossier. L&#39;arabe s&#39;ouvre en page HTML de droite à gauche dans le navigateur :</p>
+<pre><code>vexi explain index.html --ar     # Arabic (opens RTL HTML)
+vexi explain src/ --fr           # French
+vexi explain app.py --es         # Spanish
+</code></pre>
+<blockquote>
+<p>💡 <strong>Le drapeau prime — passez-le toujours.</strong> Le drapeau de langue (<code>--ar</code>) prime sur tout. Sans lui, la commande retombe sur la langue de session et un modèle faible peut dériver. Note : les skills ne contrôlent <em>pas</em> <code>explain</code> — seul le drapeau le fait.</p>
+</blockquote>
+<h2>11. Replay — exporter une session</h2>
+<p>Chaque discussion est enregistrée dans <code>.vexi/sessions/</code>. <code>vexi replay</code> ne <strong>relance</strong> rien — il transforme une session sauvegardée en page HTML animée à regarder (lecture/pause, vitesse, bouton « exporter la vidéo »). Idéal pour les démos.</p>
+<pre><code>vexi replay              # list recorded sessions
+vexi replay --export     # export latest as animated HTML
+vexi replay --export --lang ar   # right-to-left Arabic replay
+</code></pre>
+<h2>12. Dans le dossier <code>.vexi</code></h2>
+<p>Chaque projet possède un dossier <code>.vexi/</code>. Voici son contenu :</p>
+<table>
+<thead>
+<tr>
+<th>Élément</th>
+<th>Ce que c&#39;est</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>sessions/</code></td>
+<td>Discussions enregistrées — lues par <code>vexi replay</code>.</td>
+</tr>
+<tr>
+<td><code>snapshots/</code></td>
+<td>Historique annuler/rétablir. Vexi y copie les fichiers avant édition, pour que <code>/undo</code> marche sans git. Ne pas supprimer pendant le travail.</td>
+</tr>
+<tr>
+<td><code>skills/</code></td>
+<td>Vos fichiers de conventions (<code>.md</code>) — injectés à chaque session.</td>
+</tr>
+<tr>
+<td><code>project.json</code></td>
+<td>Données d&#39;analyse du projet et config.</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 <strong>Un dossier skills vide est normal.</strong> Si vous supprimez votre dernier skill, le dossier <code>skills</code> devient vide — c&#39;est normal, pas un bug. Rajoutez un skill pour le retrouver.</p>
+</blockquote>
+<h2>13. Dépannage</h2>
+<ul>
+<li>❌ <strong><code>spawn EINVAL</code> sur <code>vexi update</code> (Windows)</strong> — lancez <code>npm install -g vexi-cli@latest</code> directement dans le terminal, au lieu de <code>vexi update</code>.</li>
+<li>❌ <strong>Boucle « ressaisir la clé ? »</strong> — le fournisseur a rejeté la clé. Cause fréquente : mauvais point d&#39;accès pour cette clé (ex. clé Kimi <code>.ai</code> avec l&#39;URL <code>.cn</code>). Relancez <code>vexi setup</code> avec l&#39;URL de la bonne région, ou vérifiez le crédit.</li>
+<li>❌ <strong><code>&#39;touch&#39; non reconnu</code> (Windows)</strong> — le modèle a émis une commande Unix. Ajoutez un skill imposant les commandes Windows PowerShell. Le fichier est souvent créé par la 2ᵉ commande valide, vérifiez avant de conclure à un échec.</li>
+<li>❌ <strong>L&#39;arabe s&#39;affiche en carrés (□□□)</strong> — pas un bug ; la console Windows PowerShell classique n&#39;a pas les glyphes arabes. Lisez l&#39;arabe via <code>vexi explain … --ar</code> (s&#39;ouvre dans le navigateur, rendu parfait), ou utilisez l&#39;app Windows Terminal moderne.</li>
+<li>❌ <strong>Le modèle invente des fichiers / change de langue</strong> — c&#39;est un modèle gratuit faible, pas Vexi. Passez à un modèle plus fort via <code>vexi setup</code> ou <code>/model</code> (ex. <code>deepseek/deepseek-chat-v3:free</code> ou payant <code>z-ai/glm-5.2</code>).</li>
+<li>❌ <strong><code>unknown option &#39;-y&#39;</code> à l&#39;ajout MCP</strong> — installez <code>mcp-remote</code> globalement et supprimez <code>npx -y</code>, ou insérez <code>--</code> avant les arguments.</li>
+<li>⚠️ <strong>Gardez vos clés privées</strong> — une clé API est un mot de passe. Ne la partagez jamais dans des captures ou enregistrements d&#39;écran. Si une clé est exposée, supprimez-la dans la console du fournisseur et créez-en une nouvelle.</li>
+</ul>
+
+</div>
+<div class="doc-lang" lang="es" dir="ltr">
+<hr>
+<hr>
+<p><a id="español"></a></p>
+<h1>🇪🇸 Español</h1>
+<h2>1. Qué es Vexi (y qué no es)</h2>
+<p>Vexi es el <strong>agente</strong> — la herramienta que lee tus archivos, escribe código y conversa en tu terminal. <strong>No tiene un cerebro de IA propio.</strong> Se conecta a un modelo alojado en otro sitio (OpenRouter, Groq, DeepSeek…) con una clave API.</p>
+<blockquote>
+<p><strong>Idea clave:</strong> piensa en un navegador. Chrome no contiene sitios web — solo se <em>conecta</em> a ellos. Vexi es igual: no contiene IA, se conecta a ella.</p>
+</blockquote>
+<p>Aquí hay <strong>dos tipos de «gratis»</strong>, y confundirlos causa casi toda la confusión inicial:</p>
+<ul>
+<li><strong>Vexi como herramienta</strong> → gratis (open source, se instala gratis con npm).</li>
+<li><strong>El modelo de IA</strong> → gratis solo si el proveedor que conectas ofrece un plan gratuito.</li>
+</ul>
+<h2>2. Instalar y actualizar</h2>
+<p>Necesitas Node.js instalado (incluye npm). Luego instala Vexi de forma global:</p>
+<pre><code>npm install -g vexi-cli
+</code></pre>
+<p>Para actualizar a la última versión:</p>
+<pre><code>npm install -g vexi-cli@latest
+</code></pre>
+<blockquote>
+<p>⚠️ <strong>Windows: <code>vexi update</code> puede fallar.</strong> Puede aparecer <code>spawn EINVAL</code> al ejecutar <code>vexi update</code>. Es un comportamiento conocido de versiones recientes de Node.js. La solución fiable es ejecutar el comando npm directamente (arriba) en lugar de <code>vexi update</code> — escrito en la terminal, siempre funciona.</p>
+</blockquote>
+<p>Comprueba tu versión instalada en cualquier momento:</p>
+<pre><code>vexi --version
+</code></pre>
+<h2>3. Conectar una IA con <code>vexi setup</code></h2>
+<p><code>vexi setup</code> es la forma limpia y recomendada de configurar tu IA. Parte de la <strong>URL</strong> del endpoint: sin adivinar — detecta el proveedor, obtiene la lista de modelos en vivo y te deja elegir.</p>
+<pre><code>vexi setup
+</code></pre>
+<p>Pide tres cosas, en orden — <strong>URL → clave → modelo</strong>:</p>
+<pre><code>? Paste your endpoint URL  › https://openrouter.ai/api/v1
+  Detected: OpenRouter
+? Paste your API key       › sk-or-...
+  Fetching available models…
+? Choose a model           › deepseek/deepseek-chat-v3:free
+  ✓ Saved — run `vexi` to start
+</code></pre>
+<blockquote>
+<p>💡 <strong>Por qué setup es mejor que pegar una clave:</strong> el primer arranque intenta <em>adivinar</em> el proveedor por el prefijo de la clave, que es ambiguo (<code>sk-</code> puede ser OpenAI, DeepSeek o Kimi). <code>vexi setup</code> elimina la adivinanza y muestra la lista real de modelos. Úsalo siempre que configures o cambies de proveedor.</p>
+</blockquote>
+<h2>4. URLs de los proveedores</h2>
+<p>Una URL de endpoint <strong>no es una página que abras en el navegador</strong> — es la dirección que pegas en <code>vexi setup</code>. Nunca la <em>ves</em> en la web del proveedor; obtienes la <strong>clave</strong> en la web y la <strong>URL</strong> en la tabla de abajo (o en la documentación del proveedor).</p>
+<table>
+<thead>
+<tr>
+<th>Proveedor</th>
+<th>URL del endpoint</th>
+<th>¿Plan gratis?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>OpenRouter</td>
+<td><code>https://openrouter.ai/api/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Groq</td>
+<td><code>https://api.groq.com/openai/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>DeepSeek</td>
+<td><code>https://api.deepseek.com/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Google Gemini</td>
+<td><code>https://generativelanguage.googleapis.com/v1beta/openai/</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Cerebras</td>
+<td><code>https://api.cerebras.ai/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Ollama (local)</td>
+<td><code>http://localhost:11434/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Anthropic (Claude)</td>
+<td><code>https://api.anthropic.com/v1</code></td>
+<td>✕</td>
+</tr>
+<tr>
+<td>OpenAI</td>
+<td><code>https://api.openai.com/v1</code></td>
+<td>✕</td>
+</tr>
+<tr>
+<td>Kimi (Moonshot) — intl</td>
+<td><code>https://api.moonshot.ai/v1</code></td>
+<td>prueba</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 <strong>Lo más simple — una clave para todo:</strong> con una sola clave de <strong>OpenRouter</strong> llegas a GLM, DeepSeek, Kimi, Claude, Gemini y más — solo cambia el modelo. Quédate en <code>https://openrouter.ai/api/v1</code> y casi nunca volverás a usar <code>vexi setup</code>.</p>
+</blockquote>
+<blockquote>
+<p>⚠️ <strong>Kimi: clave y región coincidentes.</strong> Kimi (Moonshot) tiene dos regiones distintas. Una clave de <code>platform.kimi.ai</code> solo funciona con <code>api.moonshot.ai</code>; una de <code>platform.moonshot.cn</code> solo con <code>api.moonshot.cn</code>. Mezclarlas provoca un bucle infinito de «vuelve a introducir tu clave».</p>
+</blockquote>
+<h2>5. Elegir modelos gratis o de pago</h2>
+<p>En OpenRouter, los modelos que terminan en <code>:free</code> no cuestan nada. El resto cobra de tus créditos por token.</p>
+<blockquote>
+<p>💡 <strong>Regla:</strong> elige solo modelos que terminen en <code>:free</code>, o usa el plan gratuito de un proveedor (Groq, Gemini, Cerebras). Así nunca gastas dinero.</p>
+</blockquote>
+<p>La contrapartida: los modelos gratis son más flojos. Pueden <strong>inventar archivos inexistentes</strong>, cambiar de idioma o ignorar instrucciones. Si un modelo alucina o no obedece, es el <em>modelo</em>, no Vexi — cambia a uno más potente (el plan gratis de DeepSeek es un buen salto; GLM 5.2 es una opción de pago barata).</p>
+<h2>6. <code>vexi</code> vs <code>vexi setup</code> — uso diario</h2>
+<p><code>vexi setup</code> <strong>configura</strong> (qué IA usar). <code>vexi</code> lo <strong>usa</strong> (chatear y programar). Configuras una vez; ejecutas muchas. Tu configuración se guarda y persiste — <em>no</em> ejecutas setup antes de cada sesión.</p>
+<pre><code># once (or when switching models)
+vexi setup
+
+# every time you want to work
+vexi
+</code></pre>
+<p>Ejecutar <code>vexi</code> inicia el chat interactivo. La línea de estado muestra tu configuración de un vistazo:</p>
+<pre><code>project salik · provider OpenRouter · model deepseek/deepseek-chat-v3:free · lang en
+</code></pre>
+<p>En el prompt <code>&gt;</code>, escribe tu petición en lenguaje natural. Comandos de la sesión: <code>/help /model /clear /undo /redo /history /push /exit</code>.</p>
+<h2>7. Cambiar de proveedor o modelo</h2>
+<table>
+<thead>
+<tr>
+<th>Quiero…</th>
+<th>Haz esto</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Cambiar de proveedor</td>
+<td><code>vexi setup</code></td>
+</tr>
+<tr>
+<td>Cambiar modelo, mismo proveedor</td>
+<td><code>/model &lt;id&gt;</code></td>
+</tr>
+<tr>
+<td>Usar lo configurado</td>
+<td><code>vexi</code></td>
+</tr>
+</tbody></table>
+<p>Dentro de una sesión, cambia el modelo al instante sin volver a introducir la clave:</p>
+<pre><code>/model z-ai/glm-5.2
+</code></pre>
+<blockquote>
+<p>⚠️ <strong>Nota:</strong> <code>/model</code> acepta cualquier texto sin verificarlo contra la lista — un error no se nota hasta que la API rechaza tu siguiente mensaje. Copia el identificador exacto (el sufijo <code>:free</code> y cualquier prefijo <code>vendor/</code> deben coincidir).</p>
+</blockquote>
+<h2>8. Skills personalizados (reglas del proyecto)</h2>
+<p>Los skills son archivos markdown en <code>.vexi/skills/</code> dentro de tu proyecto. En cada sesión se inyectan como reglas que el modelo debe seguir — ideal para «usa siempre comandos de Windows» o «responde en árabe». Ojo: <code>.vexi/skills</code> son <strong>dos carpetas anidadas</strong>, y cada archivo debe terminar en <code>.md</code>.</p>
+<p><strong>Gestionar skills:</strong></p>
+<pre><code>vexi skill add ./my-rules.md              # from a local file
+vexi skill add https://github.com/u/repo  # from a GitHub repo
+vexi skill list                           # show active skills
+vexi skill remove my-rules                # remove by NAME (no .md)
+</code></pre>
+<blockquote>
+<p>⚠️ <strong>Crea el archivo, no pegues comandos dentro.</strong> En Windows, la forma fiable es ejecutar un comando que <em>escriba el archivo por ti</em> — no abras el Bloc de notas para pegar el comando dentro. Todo lo que está entre <code>@&#39;</code> y <code>&#39;@</code> es el contenido; el resto es el comando que lo guarda.</p>
+</blockquote>
+<pre><code class="language-powershell">New-Item -ItemType Directory -Force -Path &quot;.vexi\skills&quot; | Out-Null
+@&#39;
+# Project Conventions
+- Use Windows PowerShell commands only (no touch, ls, rm, cat, &amp;&amp;).
+- Reply in Arabic by default.
+- Explain only the real files in this project; never invent files.
+&#39;@ | Set-Content -Path &quot;.vexi\skills\rules.md&quot; -Encoding UTF8
+</code></pre>
+<h2>9. Añadir servidores MCP</h2>
+<p>Los servidores MCP dan herramientas extra al modelo. El cliente MCP de Vexi ejecuta un <strong>comando local</strong> (stdio). Forma general:</p>
+<pre><code>vexi mcp add &lt;name&gt; &lt;command&gt; [args...]
+vexi mcp list
+vexi mcp remove &lt;name&gt;
+</code></pre>
+<p>Un servidor MCP <strong>remoto</strong> (una URL, como Higgsfield) no se puede añadir directamente, porque Vexi solo habla stdio. Usa el puente <code>mcp-remote</code> — instálalo una vez y apunta Vexi a él:</p>
+<pre><code>npm install -g mcp-remote
+vexi mcp add higgsfield mcp-remote https://mcp.higgsfield.ai/mcp
+</code></pre>
+<blockquote>
+<p>❌ <strong>Error: <code>unknown option &#39;-y&#39;</code>.</strong> Si usas <code>npx -y</code>, el analizador de Vexi toma <code>-y</code> como opción propia y falla. Solución: instala <code>mcp-remote</code> globalmente (arriba) para quitar <code>npx -y</code> — o pon <code>--</code> antes: <code>vexi mcp add name npx -- -y mcp-remote &lt;url&gt;</code>.</p>
+</blockquote>
+<p>En el primer arranque tras añadirlo, el puente abre el navegador para iniciar sesión y autorizar. Nota: manejar bien muchas herramientas requiere un modelo capaz — los gratis suelen fallar, y los resultados multimedia vuelven como URLs en la terminal.</p>
+<h2>10. Explicar código en tu idioma</h2>
+<p><code>vexi explain</code> escribe la explicación de un archivo o carpeta. El árabe se abre como página HTML de derecha a izquierda en el navegador:</p>
+<pre><code>vexi explain index.html --ar     # Arabic (opens RTL HTML)
+vexi explain src/ --fr           # French
+vexi explain app.py --es         # Spanish
+</code></pre>
+<blockquote>
+<p>💡 <strong>La bandera manda — pásala siempre.</strong> La bandera de idioma (<code>--ar</code>) tiene prioridad sobre todo. Sin ella, el comando usa el idioma de la sesión y un modelo flojo puede desviarse. Nota: los skills <em>no</em> controlan <code>explain</code> — solo la bandera.</p>
+</blockquote>
+<h2>11. Replay — exportar una sesión</h2>
+<p>Cada chat se graba en <code>.vexi/sessions/</code>. <code>vexi replay</code> <strong>no</strong> vuelve a ejecutar nada — convierte una sesión guardada en una página HTML animada para ver (reproducir/pausar, velocidad, botón «exportar vídeo»). Ideal para demos.</p>
+<pre><code>vexi replay              # list recorded sessions
+vexi replay --export     # export latest as animated HTML
+vexi replay --export --lang ar   # right-to-left Arabic replay
+</code></pre>
+<h2>12. Dentro de la carpeta <code>.vexi</code></h2>
+<p>Cada proyecto tiene una carpeta <code>.vexi/</code>. Esto es lo que contiene:</p>
+<table>
+<thead>
+<tr>
+<th>Elemento</th>
+<th>Qué es</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>sessions/</code></td>
+<td>Chats grabados — los lee <code>vexi replay</code>.</td>
+</tr>
+<tr>
+<td><code>snapshots/</code></td>
+<td>Historial de deshacer/rehacer. Vexi copia archivos aquí antes de editar, así <code>/undo</code> funciona sin git. No borrar mientras trabajas.</td>
+</tr>
+<tr>
+<td><code>skills/</code></td>
+<td>Tus archivos de convenciones (<code>.md</code>) — inyectados en cada sesión.</td>
+</tr>
+<tr>
+<td><code>project.json</code></td>
+<td>Datos del análisis del proyecto y configuración.</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 <strong>Una carpeta skills vacía es normal.</strong> Si quitas tu último skill, la carpeta <code>skills</code> queda vacía — es esperado, no un error. Añade un skill de nuevo para recuperarla.</p>
+</blockquote>
+<h2>13. Solución de problemas</h2>
+<ul>
+<li>❌ <strong><code>spawn EINVAL</code> en <code>vexi update</code> (Windows)</strong> — ejecuta <code>npm install -g vexi-cli@latest</code> directamente en la terminal en vez de <code>vexi update</code>.</li>
+<li>❌ <strong>Bucle «¿reintroducir tu clave?»</strong> — el proveedor rechazó la clave. Causa común: endpoint incorrecto para esa clave (p. ej. clave Kimi <code>.ai</code> con la URL <code>.cn</code>). Vuelve a ejecutar <code>vexi setup</code> con la URL de la región correcta, o revisa el saldo.</li>
+<li>❌ <strong><code>&#39;touch&#39; no se reconoce</code> (Windows)</strong> — el modelo emitió un comando Unix. Añade un skill que exija solo comandos de Windows PowerShell. El archivo suele crearse con el segundo comando válido; comprueba antes de darlo por fallido.</li>
+<li>❌ <strong>El árabe aparece como cuadros (□□□)</strong> — no es un error; la consola clásica de Windows PowerShell no tiene glifos árabes. Lee el árabe con <code>vexi explain … --ar</code> (se abre en el navegador y se ve perfecto), o usa la app moderna Windows Terminal.</li>
+<li>❌ <strong>El modelo inventa archivos / cambia de idioma</strong> — es un modelo gratis flojo, no Vexi. Cambia a uno más potente con <code>vexi setup</code> o <code>/model</code> (p. ej. <code>deepseek/deepseek-chat-v3:free</code> o de pago <code>z-ai/glm-5.2</code>).</li>
+<li>❌ <strong><code>unknown option &#39;-y&#39;</code> al añadir MCP</strong> — instala <code>mcp-remote</code> globalmente y quita <code>npx -y</code>, o inserta <code>--</code> antes de los argumentos.</li>
+<li>⚠️ <strong>Mantén tus claves privadas</strong> — una clave API es una contraseña. Nunca la compartas en capturas ni grabaciones de pantalla. Si se expone una clave, elimínala en la consola del proveedor y crea una nueva.</li>
+</ul>
+
+</div>
+<div class="doc-lang" lang="pt" dir="ltr">
+<hr>
+<hr>
+<p><a id="português"></a></p>
+<h1>🇵🇹 Português</h1>
+<h2>1. O que é o Vexi (e o que não é)</h2>
+<p>Vexi é o <strong>agente</strong> — a ferramenta que lê seus arquivos, escreve código e conversa no seu terminal. Ele <strong>não tem um cérebro de IA próprio.</strong> Conecta-se a um modelo hospedado em outro lugar (OpenRouter, Groq, DeepSeek…) usando uma chave de API.</p>
+<blockquote>
+<p><strong>Ideia central:</strong> pense num navegador. O Chrome não contém sites — ele só se <em>conecta</em> a eles. O Vexi é igual: não contém IA, ele se conecta a uma.</p>
+</blockquote>
+<p>Existem <strong>dois tipos de &quot;grátis&quot;</strong> aqui, e confundi-los causa quase toda a confusão inicial:</p>
+<ul>
+<li><strong>O Vexi como ferramenta</strong> → grátis (open source, instalado de graça via npm).</li>
+<li><strong>O modelo de IA</strong> → grátis somente se o provedor que você conectar oferecer um plano gratuito.</li>
+</ul>
+<h2>2. Instalar e atualizar</h2>
+<p>Você precisa do Node.js instalado (que inclui o npm). Depois instale o Vexi globalmente:</p>
+<pre><code>npm install -g vexi-cli
+</code></pre>
+<p>Para atualizar para a versão mais recente:</p>
+<pre><code>npm install -g vexi-cli@latest
+</code></pre>
+<blockquote>
+<p>⚠️ <strong>Windows: <code>vexi update</code> pode falhar.</strong> Pode aparecer <code>spawn EINVAL</code> ao rodar <code>vexi update</code>. É um comportamento conhecido em versões recentes do Node.js. A solução confiável é rodar o comando npm diretamente (acima) em vez de <code>vexi update</code> — digitado no terminal, sempre funciona.</p>
+</blockquote>
+<p>Verifique sua versão instalada a qualquer momento:</p>
+<pre><code>vexi --version
+</code></pre>
+<h2>3. Conectar uma IA com <code>vexi setup</code></h2>
+<p><code>vexi setup</code> é a maneira limpa e recomendada de configurar sua IA. Ela parte da <strong>URL</strong> do endpoint: sem adivinhação — detecta o provedor, busca a lista de modelos ao vivo e deixa você escolher.</p>
+<pre><code>vexi setup
+</code></pre>
+<p>Ela pede três coisas, em ordem — <strong>URL → chave → modelo</strong>:</p>
+<pre><code>? Paste your endpoint URL  › https://openrouter.ai/api/v1
+  Detected: OpenRouter
+? Paste your API key       › sk-or-...
+  Fetching available models…
+? Choose a model           › deepseek/deepseek-chat-v3:free
+  ✓ Saved — run `vexi` to start
+</code></pre>
+<blockquote>
+<p>💡 <strong>Por que setup é melhor que colar uma chave:</strong> o primeiro início tenta <em>adivinhar</em> o provedor pelo prefixo da chave, que é ambíguo (<code>sk-</code> pode ser OpenAI, DeepSeek ou Kimi). O <code>vexi setup</code> elimina a adivinhação e mostra a lista real de modelos. Use-o sempre que configurar ou trocar de provedor.</p>
+</blockquote>
+<h2>4. URLs dos provedores</h2>
+<p>Uma URL de endpoint <strong>não é uma página que você abre no navegador</strong> — é o endereço que você cola no <code>vexi setup</code>. Você nunca a <em>vê</em> no site do provedor; você pega a <strong>chave</strong> no site e a <strong>URL</strong> na tabela abaixo (ou na documentação do provedor).</p>
+<table>
+<thead>
+<tr>
+<th>Provedor</th>
+<th>URL do endpoint</th>
+<th>Plano grátis?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>OpenRouter</td>
+<td><code>https://openrouter.ai/api/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Groq</td>
+<td><code>https://api.groq.com/openai/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>DeepSeek</td>
+<td><code>https://api.deepseek.com/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Google Gemini</td>
+<td><code>https://generativelanguage.googleapis.com/v1beta/openai/</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Cerebras</td>
+<td><code>https://api.cerebras.ai/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Ollama (local)</td>
+<td><code>http://localhost:11434/v1</code></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Anthropic (Claude)</td>
+<td><code>https://api.anthropic.com/v1</code></td>
+<td>✕</td>
+</tr>
+<tr>
+<td>OpenAI</td>
+<td><code>https://api.openai.com/v1</code></td>
+<td>✕</td>
+</tr>
+<tr>
+<td>Kimi (Moonshot) — intl</td>
+<td><code>https://api.moonshot.ai/v1</code></td>
+<td>teste</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 <strong>O mais simples — uma chave para tudo:</strong> com uma única chave da <strong>OpenRouter</strong> você alcança GLM, DeepSeek, Kimi, Claude, Gemini e mais — basta trocar o modelo. Fique em <code>https://openrouter.ai/api/v1</code> e raramente voltará a usar o <code>vexi setup</code>.</p>
+</blockquote>
+<blockquote>
+<p>⚠️ <strong>Kimi: chave e região correspondentes.</strong> Kimi (Moonshot) tem duas regiões distintas. Uma chave de <code>platform.kimi.ai</code> só funciona com <code>api.moonshot.ai</code>; uma de <code>platform.moonshot.cn</code> só com <code>api.moonshot.cn</code>. Misturá-las causa um loop infinito de &quot;insira sua chave novamente&quot;.</p>
+</blockquote>
+<h2>5. Escolher modelos grátis ou pagos</h2>
+<p>Na OpenRouter, modelos terminados em <code>:free</code> não custam nada. O resto cobra dos seus créditos por token.</p>
+<blockquote>
+<p>💡 <strong>Regra:</strong> escolha apenas modelos terminados em <code>:free</code>, ou use o plano gratuito de um provedor (Groq, Gemini, Cerebras). Assim você nunca gasta dinheiro.</p>
+</blockquote>
+<p>O custo: modelos grátis são mais fracos. Podem <strong>inventar arquivos que não existem</strong>, trocar de idioma ou ignorar instruções. Se um modelo alucina ou não obedece, o problema é o <em>modelo</em>, não o Vexi — troque por um mais forte (o plano grátis do DeepSeek é um bom passo; o GLM 5.2 é uma opção paga barata).</p>
+<h2>6. <code>vexi</code> vs <code>vexi setup</code> — uso diário</h2>
+<p><code>vexi setup</code> <strong>configura</strong> (qual IA usar). <code>vexi</code> o <strong>usa</strong> (conversar e programar). Você configura uma vez; roda muitas. A configuração é salva e persiste — você <em>não</em> roda setup antes de cada sessão.</p>
+<pre><code># once (or when switching models)
+vexi setup
+
+# every time you want to work
+vexi
+</code></pre>
+<p>Rodar <code>vexi</code> inicia o chat interativo. A linha de status mostra sua configuração num relance:</p>
+<pre><code>project salik · provider OpenRouter · model deepseek/deepseek-chat-v3:free · lang en
+</code></pre>
+<p>No prompt <code>&gt;</code>, digite seu pedido em linguagem natural. Comandos da sessão: <code>/help /model /clear /undo /redo /history /push /exit</code>.</p>
+<h2>7. Trocar de provedor ou modelo</h2>
+<table>
+<thead>
+<tr>
+<th>Eu quero…</th>
+<th>Faça isto</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Trocar de provedor</td>
+<td><code>vexi setup</code></td>
+</tr>
+<tr>
+<td>Trocar modelo, mesmo provedor</td>
+<td><code>/model &lt;id&gt;</code></td>
+</tr>
+<tr>
+<td>Usar o que está configurado</td>
+<td><code>vexi</code></td>
+</tr>
+</tbody></table>
+<p>Dentro de uma sessão, troque o modelo na hora sem reinserir a chave:</p>
+<pre><code>/model z-ai/glm-5.2
+</code></pre>
+<blockquote>
+<p>⚠️ <strong>Nota:</strong> <code>/model</code> aceita qualquer texto sem verificar na lista — um erro de digitação só aparece quando a API rejeita sua próxima mensagem. Copie o identificador exato (o sufixo <code>:free</code> e qualquer prefixo <code>vendor/</code> devem bater).</p>
+</blockquote>
+<h2>8. Skills personalizados (regras do projeto)</h2>
+<p>Skills são arquivos markdown em <code>.vexi/skills/</code> dentro do seu projeto. Em cada sessão são injetados como regras que o modelo deve seguir — ótimos para &quot;sempre usar comandos do Windows&quot; ou &quot;responder em árabe&quot;. Note que <code>.vexi/skills</code> são <strong>duas pastas aninhadas</strong>, e cada arquivo deve terminar em <code>.md</code>.</p>
+<p><strong>Gerenciar skills:</strong></p>
+<pre><code>vexi skill add ./my-rules.md              # from a local file
+vexi skill add https://github.com/u/repo  # from a GitHub repo
+vexi skill list                           # show active skills
+vexi skill remove my-rules                # remove by NAME (no .md)
+</code></pre>
+<blockquote>
+<p>⚠️ <strong>Crie o arquivo, não cole comandos nele.</strong> No Windows, a forma confiável é rodar um comando que <em>escreve o arquivo para você</em> — não abra o Bloco de Notas para colar o comando dentro. Tudo entre <code>@&#39;</code> e <code>&#39;@</code> é o conteúdo; o resto é o comando que salva.</p>
+</blockquote>
+<pre><code class="language-powershell">New-Item -ItemType Directory -Force -Path &quot;.vexi\skills&quot; | Out-Null
+@&#39;
+# Project Conventions
+- Use Windows PowerShell commands only (no touch, ls, rm, cat, &amp;&amp;).
+- Reply in Arabic by default.
+- Explain only the real files in this project; never invent files.
+&#39;@ | Set-Content -Path &quot;.vexi\skills\rules.md&quot; -Encoding UTF8
+</code></pre>
+<h2>9. Adicionar servidores MCP</h2>
+<p>Servidores MCP dão ferramentas extras ao modelo. O cliente MCP do Vexi roda um <strong>comando local</strong> (stdio). Forma geral:</p>
+<pre><code>vexi mcp add &lt;name&gt; &lt;command&gt; [args...]
+vexi mcp list
+vexi mcp remove &lt;name&gt;
+</code></pre>
+<p>Um servidor MCP <strong>remoto</strong> (uma URL, como o Higgsfield) não pode ser adicionado diretamente, porque o Vexi só fala stdio. Use a ponte <code>mcp-remote</code> — instale-a uma vez e aponte o Vexi para ela:</p>
+<pre><code>npm install -g mcp-remote
+vexi mcp add higgsfield mcp-remote https://mcp.higgsfield.ai/mcp
+</code></pre>
+<blockquote>
+<p>❌ <strong>Erro: <code>unknown option &#39;-y&#39;</code>.</strong> Se você usar <code>npx -y</code>, o parser do Vexi captura o <code>-y</code> como opção própria e falha. Solução: instale o <code>mcp-remote</code> globalmente (acima) para remover o <code>npx -y</code> — ou coloque <code>--</code> antes: <code>vexi mcp add name npx -- -y mcp-remote &lt;url&gt;</code>.</p>
+</blockquote>
+<p>No primeiro início após adicionar, a ponte abre seu navegador para login e autorização. Nota: conduzir bem muitas ferramentas exige um modelo capaz — os grátis costumam falhar, e resultados de mídia voltam como URLs no terminal.</p>
+<h2>10. Explicar código no seu idioma</h2>
+<p><code>vexi explain</code> escreve a explicação de um arquivo ou pasta. O árabe abre como página HTML da direita para a esquerda no navegador:</p>
+<pre><code>vexi explain index.html --ar     # Arabic (opens RTL HTML)
+vexi explain src/ --fr           # French
+vexi explain app.py --es         # Spanish
+</code></pre>
+<blockquote>
+<p>💡 <strong>A flag vence — sempre a passe.</strong> A flag de idioma (<code>--ar</code>) tem prioridade sobre tudo. Sem ela, o comando usa o idioma da sessão e um modelo fraco pode desviar. Nota: skills <em>não</em> controlam o <code>explain</code> — só a flag controla.</p>
+</blockquote>
+<h2>11. Replay — exportar uma sessão</h2>
+<p>Cada chat é gravado em <code>.vexi/sessions/</code>. <code>vexi replay</code> <strong>não</strong> executa nada de novo — transforma uma sessão salva em uma página HTML animada para assistir (reproduzir/pausar, velocidade, botão &quot;exportar vídeo&quot;). Ótimo para demos.</p>
+<pre><code>vexi replay              # list recorded sessions
+vexi replay --export     # export latest as animated HTML
+vexi replay --export --lang ar   # right-to-left Arabic replay
+</code></pre>
+<h2>12. Dentro da pasta <code>.vexi</code></h2>
+<p>Cada projeto tem uma pasta <code>.vexi/</code>. Veja o que há nela:</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>O que é</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>sessions/</code></td>
+<td>Chats gravados — lidos pelo <code>vexi replay</code>.</td>
+</tr>
+<tr>
+<td><code>snapshots/</code></td>
+<td>Histórico de desfazer/refazer. O Vexi copia arquivos aqui antes de editar, então <code>/undo</code> funciona sem git. Não apague enquanto trabalha.</td>
+</tr>
+<tr>
+<td><code>skills/</code></td>
+<td>Seus arquivos de convenções (<code>.md</code>) — injetados em cada sessão.</td>
+</tr>
+<tr>
+<td><code>project.json</code></td>
+<td>Dados da varredura do projeto e configuração.</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 <strong>Uma pasta skills vazia é normal.</strong> Se você remover seu último skill, a pasta <code>skills</code> fica vazia — isso é esperado, não um bug. Adicione um skill de novo para recuperá-la.</p>
+</blockquote>
+<h2>13. Solução de problemas</h2>
+<ul>
+<li>❌ <strong><code>spawn EINVAL</code> no <code>vexi update</code> (Windows)</strong> — rode <code>npm install -g vexi-cli@latest</code> diretamente no terminal em vez de <code>vexi update</code>.</li>
+<li>❌ <strong>Loop &quot;inserir a chave novamente?&quot;</strong> — o provedor rejeitou a chave. Causa comum: endpoint errado para essa chave (ex.: chave Kimi <code>.ai</code> com a URL <code>.cn</code>). Rode <code>vexi setup</code> de novo com a URL da região certa, ou verifique o saldo.</li>
+<li>❌ <strong><code>&#39;touch&#39; não reconhecido</code> (Windows)</strong> — o modelo emitiu um comando Unix. Adicione um skill exigindo apenas comandos do Windows PowerShell. O arquivo costuma ser criado pelo segundo comando válido; verifique antes de supor falha.</li>
+<li>❌ <strong>O árabe aparece como quadrados (□□□)</strong> — não é bug; o console clássico do Windows PowerShell não tem glifos árabes. Leia o árabe via <code>vexi explain … --ar</code> (abre no navegador e renderiza perfeitamente), ou use o app moderno Windows Terminal.</li>
+<li>❌ <strong>O modelo inventa arquivos / muda de idioma</strong> — é um modelo grátis fraco, não o Vexi. Troque por um mais forte com <code>vexi setup</code> ou <code>/model</code> (ex.: <code>deepseek/deepseek-chat-v3:free</code> ou pago <code>z-ai/glm-5.2</code>).</li>
+<li>❌ <strong><code>unknown option &#39;-y&#39;</code> ao adicionar MCP</strong> — instale o <code>mcp-remote</code> globalmente e remova o <code>npx -y</code>, ou insira <code>--</code> antes dos argumentos.</li>
+<li>⚠️ <strong>Mantenha suas chaves privadas</strong> — uma chave de API é uma senha. Nunca a compartilhe em capturas ou gravações de tela. Se uma chave for exposta, apague-a no painel do provedor e crie uma nova.</li>
+</ul>
+<hr>
+<p><em>Vexi documentation — built from real first-run experience. <a href="https://vexi.pro">https://vexi.pro</a></em></p>
+
+</div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a href="index.html#top" class="brand">VEXI</a>
+        <p>Open-source AI coding agent for your terminal. Bring your own key, zero config, 100% local.</p>
+      </div>
+      <div class="foot-cols">
+        <div class="foot-col">
+          <h4>Product</h4>
+          <a href="index.html#features">Features</a>
+          <a href="index.html#about">About</a>
+          <a href="https://www.npmjs.com/package/vexi-cli" target="_blank">npm</a>
+          <a href="https://github.com/Elomami1976/vexi" target="_blank">GitHub</a>
+        </div>
+        <div class="foot-col">
+          <h4>Resources</h4>
+          <a href="docs.html">Documentation</a>
+          <a href="https://github.com/Elomami1976/vexi/issues" target="_blank">Report issue</a>
+          <a href="index.html#contact">Contact</a>
+          <a href="index.html#privacy">Privacy & Terms</a>
+        </div>
+        <div class="foot-col">
+          <h4>Contact</h4>
+          <a href="mailto:hello@vexi.pro">hello@vexi.pro</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">© 2026 Vexi · MIT License · Code with AI. Speak your language.</div>
+  </div>
+</footer>
+
+</body>
+</html>

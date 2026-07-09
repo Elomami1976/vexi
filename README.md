@@ -401,17 +401,17 @@ This pairs naturally with the confirmation prompt: even if you approve a change 
 | | Vexi | OpenCode | Claude Code | Cursor |
 | --- | --- | --- | --- | --- |
 | Install | `npm i -g vexi-cli` | binary/script | `npm i -g` | desktop app |
-| BYOK (any provider) | ✅ 13 providers incl. Chinese AI + URL endpoints | ✅ | ❌ Anthropic only | partial |
-| Works fully offline/local | ✅ no server, no account | ✅ | ❌ account | ❌ account |
-| Native-language code explanations | ✅ ar/es/pt/fr | ❌ | ❌ | ❌ |
+| BYOK (any provider) | ✅ 13 providers incl. Chinese AI + URL endpoints | ✅ | limited (defaults to Anthropic; Bedrock/Vertex/gateways possible) | partial |
+| No server, no account | ✅ no server, no account | ✅ | ❌ account | ❌ account |
+| Native-language code explanations (built-in) | ✅ ar/es/pt/fr | via model | via model | via model |
 | Session replay export | ✅ | ❌ | ❌ | ❌ |
 | Persistent project memory | ✅ | partial | partial | ✅ |
 | Learns your personal coding style | ✅ from your own sessions | ❌ | ❌ | partial |
 | MCP server mode (be a tool for other agents) | ✅ | ❌ | ✅ `claude mcp serve` | ❌ |
-| Builds any language (Python, Java, C, Rust, Go) | ✅ | ❌ | ✅ | ✅ |
+| Builds any language (Python, Java, C, Rust, Go) | ✅ | ✅ | ✅ | ✅ |
 | Instant undo/redo of AI edits (no git required) | ✅ per-file snapshots | ❌ | ❌ | ❌ |
 | Git push from chat (AI commit message) | ✅ `/push` | ❌ | ✅ | partial |
-| URL endpoint setup (Ollama, custom proxies) | ✅ `vexi setup` | ❌ | ❌ | ❌ |
+| URL endpoint setup (Ollama, custom proxies) | ✅ `vexi setup` | ✅ | ❌ | ❌ |
 | License | MIT | MIT | proprietary | proprietary |
 
 Vexi **complements** tools like Claude Code instead of competing: its project memory and multilingual explanations will be exposed over MCP so any agent can use them.
