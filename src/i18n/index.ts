@@ -90,7 +90,7 @@ const en: Strings = {
   emptyKey: 'No key entered.',
   historyCleared: 'Conversation history cleared.',
   helpText:
-    '/help     show this help\n/model    switch model (e.g. /model gpt-4o)\n/memory   show compressed project memory\n/clear    clear conversation history\n/undo     revert last AI file edit\n/redo     re-apply last undone edit\n/history  list recent AI file edits\n/push     stage, commit and push to git (/push --only to skip commit)\n/exit     quit Vexi',
+    '/help     show this help\n/model    switch model (e.g. /model gpt-4o)\n/memory   show compressed project memory\n/clear    clear conversation history\n/undo     revert last AI file edit\n/redo     re-apply last undone edit\n/history  list recent AI file edits\n/push     stage, commit and push to git (/push --only to skip commit)\n/usage    token & cost estimate this session\n/exit     quit Vexi',
   modelSwitched: 'Model switched to {model}',
   configReset: 'Configuration deleted. Run `vexi` to set up again.',
   configResetNone: 'No configuration found.',
@@ -150,7 +150,7 @@ const es: Strings = {
   emptyKey: 'No se introdujo ninguna clave.',
   historyCleared: 'Historial de conversación borrado.',
   helpText:
-    '/help    mostrar esta ayuda\n/model   cambiar modelo (p. ej. /model gpt-4o)\n/memory  ver la memoria comprimida del proyecto\n/clear   borrar historial de conversación\n/push    confirmar y enviar cambios a git\n/exit    salir de Vexi',
+    '/help    mostrar esta ayuda\n/model   cambiar modelo (p. ej. /model gpt-4o)\n/memory  ver la memoria comprimida del proyecto\n/clear   borrar historial de conversación\n/push    confirmar y enviar cambios a git\n/usage   tokens y coste estimado de la sesión\n/exit    salir de Vexi',
   modelSwitched: 'Modelo cambiado a {model}',
   configReset: 'Configuración eliminada. Ejecuta `vexi` para configurar de nuevo.',
   configResetNone: 'No se encontró configuración.',
@@ -210,7 +210,7 @@ const pt: Strings = {
   emptyKey: 'Nenhuma chave inserida.',
   historyCleared: 'Histórico de conversa apagado.',
   helpText:
-    '/help    mostrar esta ajuda\n/model   trocar modelo (ex.: /model gpt-4o)\n/memory  ver a memória comprimida do projeto\n/clear   apagar histórico de conversa\n/push    confirmar e enviar mudanças ao git\n/exit    sair do Vexi',
+    '/help    mostrar esta ajuda\n/model   trocar modelo (ex.: /model gpt-4o)\n/memory  ver a memória comprimida do projeto\n/clear   apagar histórico de conversa\n/push    confirmar e enviar mudanças ao git\n/usage   tokens e custo estimado da sessão\n/exit    sair do Vexi',
   modelSwitched: 'Modelo alterado para {model}',
   configReset: 'Configuração excluída. Execute `vexi` para configurar novamente.',
   configResetNone: 'Nenhuma configuração encontrada.',
@@ -270,7 +270,7 @@ const fr: Strings = {
   emptyKey: 'Aucune clé saisie.',
   historyCleared: 'Historique de conversation effacé.',
   helpText:
-    '/help    afficher cette aide\n/model   changer de modèle (ex. /model gpt-4o)\n/memory  voir la mémoire compressée du projet\n/clear   effacer l\'historique de conversation\n/push    valider et pousser les modifications git\n/exit    quitter Vexi',
+    '/help    afficher cette aide\n/model   changer de modèle (ex. /model gpt-4o)\n/memory  voir la mémoire compressée du projet\n/clear   effacer l\'historique de conversation\n/push    valider et pousser les modifications git\n/usage   tokens et coût estimé de la session\n/exit    quitter Vexi',
   modelSwitched: 'Modèle changé pour {model}',
   configReset: 'Configuration supprimée. Lancez `vexi` pour reconfigurer.',
   configResetNone: 'Aucune configuration trouvée.',

@@ -112,7 +112,7 @@ Running `vexi` starts the interactive chat. The status line shows your current s
 project salik · provider OpenRouter · model deepseek/deepseek-chat-v3:free · lang en
 ```
 
-At the `>` prompt, type a request in plain language. In-session commands include `/help /model /clear /undo /redo /history /push /exit`.
+At the `>` prompt, type a request in plain language. In-session commands include `/help /model /clear /undo /redo /history /push /usage /exit`.
 
 ## 7. Switching provider or model
 
@@ -327,7 +327,7 @@ vexi
 project salik · provider OpenRouter · model deepseek/deepseek-chat-v3:free · lang en
 ```
 
-عند محث `>`، اكتب طلبك بلغة عادية. تشمل أوامر الجلسة `/help /model /clear /undo /redo /history /push /exit`.
+عند محث `>`، اكتب طلبك بلغة عادية. تشمل أوامر الجلسة `/help /model /clear /undo /redo /history /push /usage /exit`.
 
 ## ٧. تبديل المزوّد أو النموذج
 
@@ -542,7 +542,7 @@ Lancer `vexi` démarre le chat interactif. La ligne d'état résume votre config
 project salik · provider OpenRouter · model deepseek/deepseek-chat-v3:free · lang en
 ```
 
-À l'invite `>`, tapez une demande en langage naturel. Commandes de session : `/help /model /clear /undo /redo /history /push /exit`.
+À l'invite `>`, tapez une demande en langage naturel. Commandes de session : `/help /model /clear /undo /redo /history /push /usage /exit`.
 
 ## 7. Changer de fournisseur ou de modèle
 
@@ -757,7 +757,7 @@ Ejecutar `vexi` inicia el chat interactivo. La línea de estado muestra tu confi
 project salik · provider OpenRouter · model deepseek/deepseek-chat-v3:free · lang en
 ```
 
-En el prompt `>`, escribe tu petición en lenguaje natural. Comandos de la sesión: `/help /model /clear /undo /redo /history /push /exit`.
+En el prompt `>`, escribe tu petición en lenguaje natural. Comandos de la sesión: `/help /model /clear /undo /redo /history /push /usage /exit`.
 
 ## 7. Cambiar de proveedor o modelo
 
@@ -972,7 +972,7 @@ Rodar `vexi` inicia o chat interativo. A linha de status mostra sua configuraç�
 project salik · provider OpenRouter · model deepseek/deepseek-chat-v3:free · lang en
 ```
 
-No prompt `>`, digite seu pedido em linguagem natural. Comandos da sessão: `/help /model /clear /undo /redo /history /push /exit`.
+No prompt `>`, digite seu pedido em linguagem natural. Comandos da sessão: `/help /model /clear /undo /redo /history /push /usage /exit`.
 
 ## 7. Trocar de provedor ou modelo
 

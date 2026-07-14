@@ -172,6 +172,7 @@ Inside the chat:
 /redo     re-apply last undone edit
 /history  list recent AI file edits
 /push     stage, commit and push to git
+/usage    token & cost estimate for this session
 /exit     quit
 ```
 
@@ -381,6 +382,35 @@ Or use the in-chat shortcuts without leaving the session: `/undo`, `/redo`, `/hi
 
 This pairs naturally with the confirmation prompt: even if you approve a change that turns out to be wrong, one command gets you back.
 
+## <img src="assets/icons/file-check.svg" width="22" height="22" alt=""/> Reliable file edits
+
+Vexi edits files through structured tools — `read_file`, `write_file`, and
+`edit_file` (exact `old` → `new` substring replacement) — instead of fragile
+shell patching (`cat >`, `sed -i`). `edit_file` refuses a non-existent or
+ambiguous match rather than corrupting the file, and every write is snapshotted
+on the **exact** file about to change, so `/undo` is precise rather than
+regex-guessed.
+
+On providers that reliably support it (Anthropic, OpenAI, Groq, Gemini,
+Mistral, Cerebras, DeepSeek, Qwen, Kimi, GLM, OpenRouter), the tools run over
+**native function-calling**; everywhere else Vexi falls back to a
+provider-agnostic text protocol, so the same capabilities work with every
+provider.
+
+## <img src="assets/icons/coins.svg" width="22" height="22" alt=""/> Token & cost tracking
+
+Vexi accumulates the real token usage reported by your provider and estimates
+the dollar cost from a built-in price table:
+
+```
+/usage    → 12,340 tokens (8.1k in / 4.2k out) · ~$0.0187
+```
+
+Check it anytime with `/usage`, and a one-line summary prints when you exit
+(and to stderr in `-p` mode). Known free-tier models read as **$0**, and
+unpriced models still show token counts. Since you bring your own key, the
+`~` marks it as an estimate.
+
 ## Roadmap
 
 | Phase | Feature | Status |
@@ -395,6 +425,8 @@ This pairs naturally with the confirmation prompt: even if you approve a change 
 | 8 | **`/push`** — stage, AI-draft commit message, and push to git from chat | ✅ done |
 | 9 | **`vexi setup`** — configure any OpenAI-compatible endpoint by pasting a URL | ✅ done |
 | 10 | **Self-maintaining** — `vexi update`, `vexi uninstall`, daily update-check notice | ✅ done |
+| 11 | **Reliable file edits** — structured read/write/edit tools with exact undo snapshots, native function-calling where the provider supports it | ✅ done |
+| 12 | **Token & cost tracking** (`/usage`) · remote model-default manifest (defaults refresh without a release) | ✅ done |
 
 ## Why Vexi?
 
@@ -412,6 +444,8 @@ This pairs naturally with the confirmation prompt: even if you approve a change 
 | Instant undo/redo of AI edits (no git required) | ✅ per-file snapshots | ❌ | ❌ | ❌ |
 | Git push from chat (AI commit message) | ✅ `/push` | ❌ | ✅ | partial |
 | URL endpoint setup (Ollama, custom proxies) | ✅ `vexi setup` | ✅ | ❌ | ❌ |
+| Structured file-edit tools + exact undo | ✅ read/write/edit + per-file snapshots | partial | ✅ | ✅ |
+| Token & cost tracking (`/usage`) | ✅ per-session estimate | ❌ | ✅ | partial |
 | License | MIT | MIT | proprietary | proprietary |
 
 Vexi **complements** tools like Claude Code instead of competing: its project memory and multilingual explanations will be exposed over MCP so any agent can use them.

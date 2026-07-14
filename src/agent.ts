@@ -28,6 +28,7 @@ import {
   createProviderFromConfig,
   detectProvider,
   sanitizeKey,
+  refreshManifest,
   PROVIDER_INFO,
   ProviderError,
   type ChatMessage,
@@ -47,6 +48,8 @@ import { loadSkills, skillsBlock } from './skills/index.js';
 import { SessionRecorder } from './replay/recorder.js';
 import { McpManager, parseToolCall } from './mcp/client.js';
 import { loadMcpConfig } from './mcp/config.js';
+import { parseBuiltinToolCall, executeBuiltinTool, builtinToolsBlock, buildNativeTools, dispatchNativeTool } from './tools/index.js';
+import { UsageTracker } from './usage/index.js';
 import { ARABIC_RTL_NOTE, getStrings, t, type Lang, type Strings } from './i18n/index.js';
 import { gitPush } from './git/index.js';
 import { accent, dim, err, ok, printBanner, printStatusLine, userPrompt, vexiLabel, warn } from './ui/index.js';
@@ -178,6 +181,9 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
   let provider = createProviderFromConfig(config);
   const root = process.cwd();
 
+  // Best-effort: refresh the remote model-default manifest for the next run.
+  void refreshManifest();
+
   // ── Full project understanding: scan + load memory + load skills ──────
   const scanSpinner = ora({ text: dim(s.scanning), spinner: 'dots' }).start();
   let project: ProjectMap | null = null;
@@ -252,14 +258,17 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
   const projectBlock = project ? projectSummary(project) : '';
   const skillsText = skillsBlock(skills);
   let compressing = false;
+  const usage = new UsageTracker();
+  const trackUsage = (u: { inputTokens: number; outputTokens: number }) => usage.add(u);
 
   /**
    * The system prompt is rebuilt every turn because the memory block
    * changes as the Context Compression Engine folds in old messages.
    */
+  const nativeToolsEnabled = Boolean(provider.supportsTools && provider.streamTools);
   const buildSystem = (): ChatMessage => ({
     role: 'system',
-    content: buildSystemPrompt(opts.lang, projectBlock, skillsText, memoryBlock(memory), mcp.promptBlock()),
+    content: buildSystemPrompt(opts.lang, projectBlock, skillsText, memoryBlock(memory), mcp.promptBlock(), nativeToolsEnabled),
   });
 
   /**
@@ -286,12 +295,50 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
       });
   };
 
+  // Native function-calling: used when the provider reliably supports it,
+  // otherwise the text-based `vexi-tool` protocol below is used instead.
+  const nativeTools = provider.supportsTools && provider.streamTools ? buildNativeTools(mcp) : null;
+
+  /**
+   * Run any ```bash``` shell blocks in an AI reply (confirm → snapshot → run
+   * → feed output back). Shared by the native and text tool paths, since shell
+   * commands are proposed as fenced blocks regardless of tool mode.
+   */
+  const runShellBlocks = async (reply: string): Promise<void> => {
+    for (const cmd of extractShellBlocks(reply)) {
+      console.log(accent('▶ run? ') + dim(cmd.slice(0, 120) + (cmd.length > 120 ? '…' : '')));
+      const yes = await confirm({ message: 'Execute', default: true }).catch(() => false);
+      if (!yes) {
+        history.push({ role: 'user', content: `COMMAND SKIPPED: ${cmd}` });
+        continue;
+      }
+      const filesToSnap = SnapshotManager.extractFilePaths(cmd, root);
+      if (filesToSnap.length > 0) {
+        await snapshots.takeSnapshot(filesToSnap, cmd.slice(0, 80)).catch(() => {});
+      }
+      const runSpinner = ora({ text: dim('running…'), spinner: 'dots' }).start();
+      const { stdout, stderr, code } = await runCommand(cmd, root);
+      runSpinner.stop();
+      const output = [
+        stdout.trim() ? `STDOUT:\n${stdout.trim()}` : '',
+        stderr.trim() ? `STDERR:\n${stderr.trim()}` : '',
+        `EXIT CODE: ${code}`,
+      ].filter(Boolean).join('\n');
+      console.log(code === 0 ? ok('✓ done') : err(`✗ exit ${code}`));
+      if (stdout.trim()) console.log(dim(stdout.trim().slice(0, 800)));
+      if (stderr.trim()) console.log(warn(stderr.trim().slice(0, 400)));
+      history.push({ role: 'user', content: `COMMAND RESULT (${cmd.slice(0, 60)}):\n${output.slice(0, 6000)}` });
+      recorder.add('user', `COMMAND RESULT:\n${output.slice(0, 6000)}`);
+    }
+  };
+
   while (true) {
     let line: string;
     try {
       line = await readMessage(userPrompt);
     } catch {
       // Ctrl+C / closed stdin
+      if (usage.hasData) console.log('\n' + dim(`session usage: ${usage.summary(provider.model)}`));
       console.log('\n' + ok(s.goodbye));
       return;
     }
@@ -305,9 +352,13 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
       switch (cmd) {
         case '/exit':
         case '/quit':
+          if (usage.hasData) console.log(dim(`session usage: ${usage.summary(provider.model)}`));
           console.log(ok(s.goodbye));
           await mcp.close();
           return;
+        case '/usage':
+          console.log(dim(usage.summary(provider.model)) + '\n');
+          continue;
         case '/help':
           console.log(dim(s.helpText) + '\n');
           continue;
@@ -402,46 +453,67 @@ export async function runAgent(opts: AgentOptions): Promise<void> {
       // extra final round where a ```vexi-tool``` reply is no longer honored
       // — so the model is forced to give a plain answer. 6 stream() calls total.
       for (let round = 0; round < 6; round++) {
-        const reply = await provider.stream([buildSystem(), ...history], (chunk) => {
+        const onChunk = (chunk: string) => {
           if (!started) {
             spinner.stop();
             process.stdout.write(vexiLabel + ' ');
             started = true;
           }
           process.stdout.write(chunk);
-        });
+        };
+
+        // ── Native function-calling path ─────────────────────────────
+        if (nativeTools) {
+          const { text: reply, toolCalls } =
+            await provider.streamTools!([buildSystem(), ...history], nativeTools.defs, onChunk, trackUsage);
+          if (!started) spinner.stop();
+          process.stdout.write('\n\n');
+          history.push({
+            role: 'assistant',
+            content: reply,
+            toolCalls: toolCalls.length ? toolCalls : undefined,
+          });
+          recorder.add('assistant', reply);
+
+          await runShellBlocks(reply);
+
+          if (toolCalls.length === 0 || round === 5) break;
+
+          for (const tc of toolCalls) {
+            const toolSpinner = ora({ text: dim(`${tc.name}…`), spinner: 'dots' }).start();
+            const { result } = await dispatchNativeTool(
+              tc.name, tc.arguments, nativeTools.route, root, snapshots, mcp,
+            );
+            toolSpinner.stop();
+            console.log(result.startsWith('TOOL ERROR') ? err(`${tc.name}: ${result}`) : ok(`✓ ${tc.name}`));
+            history.push({ role: 'tool', content: result.slice(0, 8000), toolCallId: tc.id, toolName: tc.name });
+            recorder.add('user', `TOOL RESULT (${tc.name}):\n${result.slice(0, 8000)}`);
+          }
+          started = false; // next round streams with a fresh label
+          continue;
+        }
+
+        // ── Text-based `vexi-tool` path (providers without native tools) ─
+        const reply = await provider.stream([buildSystem(), ...history], onChunk, trackUsage);
         if (!started) spinner.stop(); // empty reply edge case
         process.stdout.write('\n\n');
         history.push({ role: 'assistant', content: reply });
         recorder.add('assistant', reply);
 
-        // ── Auto-run shell commands suggested by the AI ──────────────
-        const shellBlocks = extractShellBlocks(reply);
-        for (const cmd of shellBlocks) {
-          console.log(accent('▶ run? ') + dim(cmd.slice(0, 120) + (cmd.length > 120 ? '…' : '')));
-          const yes = await confirm({ message: 'Execute', default: true }).catch(() => false);
-          if (!yes) {
-            history.push({ role: 'user', content: `COMMAND SKIPPED: ${cmd}` });
-            continue;
-          }
-          // Silent snapshot of any files the command is about to modify
-          const filesToSnap = SnapshotManager.extractFilePaths(cmd, root);
-          if (filesToSnap.length > 0) {
-            await snapshots.takeSnapshot(filesToSnap, cmd.slice(0, 80)).catch(() => {});
-          }
-          const runSpinner = ora({ text: dim('running…'), spinner: 'dots' }).start();
-          const { stdout, stderr, code } = await runCommand(cmd, root);
-          runSpinner.stop();
-          const output = [
-            stdout.trim() ? `STDOUT:\n${stdout.trim()}` : '',
-            stderr.trim() ? `STDERR:\n${stderr.trim()}` : '',
-            `EXIT CODE: ${code}`,
-          ].filter(Boolean).join('\n');
-          console.log(code === 0 ? ok('✓ done') : err(`✗ exit ${code}`));
-          if (stdout.trim()) console.log(dim(stdout.trim().slice(0, 800)));
-          if (stderr.trim()) console.log(warn(stderr.trim().slice(0, 400)));
-          history.push({ role: 'user', content: `COMMAND RESULT (${cmd.slice(0, 60)}):\n${output.slice(0, 6000)}` });
-          recorder.add('user', `COMMAND RESULT:\n${output.slice(0, 6000)}`);
+        await runShellBlocks(reply);
+
+        // Built-in file tool requested by the model? (read/write/edit)
+        const builtinCall = round < 5 ? parseBuiltinToolCall(reply) : null;
+        if (builtinCall) {
+          const fileSpinner = ora({ text: dim(`${builtinCall.tool}…`), spinner: 'dots' }).start();
+          const { result } = await executeBuiltinTool(builtinCall, root, snapshots);
+          fileSpinner.stop();
+          console.log(result.startsWith('TOOL ERROR') ? err(result) : ok(result));
+          const toolMessage = `TOOL RESULT (${builtinCall.tool}):\n${result.slice(0, 8000)}`;
+          history.push({ role: 'user', content: toolMessage });
+          recorder.add('user', toolMessage);
+          started = false; // next round streams with a fresh label
+          continue;
         }
 
         // MCP tool call requested by the model?
@@ -533,40 +605,78 @@ export async function runPrint(opts: PrintOptions): Promise<void> {
 
   const projectBlock = project ? projectSummary(project) : '';
   const skillsText = skillsBlock(skills);
+  const nativeToolsEnabled = Boolean(provider.supportsTools && provider.streamTools);
   const buildSystem = (): ChatMessage => ({
     role: 'system',
-    content: buildSystemPrompt(opts.lang, projectBlock, skillsText, memoryBlock(memory), mcp.promptBlock()),
+    content: buildSystemPrompt(opts.lang, projectBlock, skillsText, memoryBlock(memory), mcp.promptBlock(), nativeToolsEnabled),
   });
 
   const history: ChatMessage[] = [{ role: 'user', content: opts.prompt }];
 
+  const usage = new UsageTracker();
+  const trackUsage = (u: { inputTokens: number; outputTokens: number }) => usage.add(u);
+  const nativeTools = provider.supportsTools && provider.streamTools ? buildNativeTools(mcp) : null;
+
+  const runShellBlocks = async (reply: string): Promise<void> => {
+    for (const cmd of extractShellBlocks(reply)) {
+      if (!opts.autoYes) {
+        console.error(dim(`[skipped — pass --yes to auto-run] $ ${cmd.slice(0, 120)}`));
+        history.push({ role: 'user', content: `COMMAND SKIPPED (non-interactive, no --yes flag): ${cmd}` });
+        continue;
+      }
+      console.error(accent('$ ') + cmd.slice(0, 120));
+      const filesToSnap = SnapshotManager.extractFilePaths(cmd, root);
+      if (filesToSnap.length > 0) {
+        await snapshots.takeSnapshot(filesToSnap, cmd.slice(0, 80)).catch(() => {});
+      }
+      const { stdout, stderr, code } = await runCommand(cmd, root);
+      console.error(code === 0 ? ok('✓ done') : err(`✗ exit ${code}`));
+      const output = [
+        stdout.trim() ? `STDOUT:\n${stdout.trim()}` : '',
+        stderr.trim() ? `STDERR:\n${stderr.trim()}` : '',
+        `EXIT CODE: ${code}`,
+      ].filter(Boolean).join('\n');
+      history.push({ role: 'user', content: `COMMAND RESULT (${cmd.slice(0, 60)}):\n${output.slice(0, 6000)}` });
+    }
+  };
+
   try {
     for (let round = 0; round < 6; round++) {
+      // ── Native function-calling path ─────────────────────────────
+      if (nativeTools) {
+        const { text: reply, toolCalls } =
+          await provider.streamTools!([buildSystem(), ...history], nativeTools.defs, (chunk) => process.stdout.write(chunk), trackUsage);
+        process.stdout.write('\n');
+        history.push({
+          role: 'assistant',
+          content: reply,
+          toolCalls: toolCalls.length ? toolCalls : undefined,
+        });
+        await runShellBlocks(reply);
+        if (toolCalls.length === 0 || round === 5) break;
+        for (const tc of toolCalls) {
+          const { result } = await dispatchNativeTool(tc.name, tc.arguments, nativeTools.route, root, snapshots, mcp);
+          console.error(result.startsWith('TOOL ERROR') ? err(`${tc.name}: ${result}`) : ok(`✓ ${tc.name}`));
+          history.push({ role: 'tool', content: result.slice(0, 8000), toolCallId: tc.id, toolName: tc.name });
+        }
+        continue;
+      }
+
+      // ── Text-based `vexi-tool` path ──────────────────────────────
       const reply = await provider.stream([buildSystem(), ...history], (chunk) => {
         process.stdout.write(chunk);
-      });
+      }, trackUsage);
       process.stdout.write('\n');
       history.push({ role: 'assistant', content: reply });
 
-      for (const cmd of extractShellBlocks(reply)) {
-        if (!opts.autoYes) {
-          console.error(dim(`[skipped — pass --yes to auto-run] $ ${cmd.slice(0, 120)}`));
-          history.push({ role: 'user', content: `COMMAND SKIPPED (non-interactive, no --yes flag): ${cmd}` });
-          continue;
-        }
-        console.error(accent('$ ') + cmd.slice(0, 120));
-        const filesToSnap = SnapshotManager.extractFilePaths(cmd, root);
-        if (filesToSnap.length > 0) {
-          await snapshots.takeSnapshot(filesToSnap, cmd.slice(0, 80)).catch(() => {});
-        }
-        const { stdout, stderr, code } = await runCommand(cmd, root);
-        console.error(code === 0 ? ok('✓ done') : err(`✗ exit ${code}`));
-        const output = [
-          stdout.trim() ? `STDOUT:\n${stdout.trim()}` : '',
-          stderr.trim() ? `STDERR:\n${stderr.trim()}` : '',
-          `EXIT CODE: ${code}`,
-        ].filter(Boolean).join('\n');
-        history.push({ role: 'user', content: `COMMAND RESULT (${cmd.slice(0, 60)}):\n${output.slice(0, 6000)}` });
+      await runShellBlocks(reply);
+
+      const builtinCall = round < 5 ? parseBuiltinToolCall(reply) : null;
+      if (builtinCall) {
+        const { result } = await executeBuiltinTool(builtinCall, root, snapshots);
+        console.error(result.startsWith('TOOL ERROR') ? err(result) : ok(result));
+        history.push({ role: 'user', content: `TOOL RESULT (${builtinCall.tool}):\n${result.slice(0, 8000)}` });
+        continue;
       }
 
       const call = mcp.tools.length > 0 && round < 5 ? parseToolCall(reply) : null;
@@ -585,6 +695,7 @@ export async function runPrint(opts: PrintOptions): Promise<void> {
     console.error(err(message));
     process.exitCode = 1;
   } finally {
+    if (usage.hasData) console.error(dim(`usage: ${usage.summary(provider.model)}`));
     await mcp.close();
   }
 }
@@ -634,6 +745,7 @@ function buildSystemPrompt(
   skillsText: string,
   memoryText: string,
   mcpText: string,
+  nativeTools = false,
 ): string {
   const langNames: Record<Lang, string> = {
     en: 'English',
@@ -664,9 +776,22 @@ function buildSystemPrompt(
     'Always use `bash` as the code block language tag for commands — never `python`, `java`, etc.',
     'After seeing the output, continue helping based on the result.',
   ];
+  if (nativeTools) {
+    // Native function-calling: file tools (and MCP tools) are advertised
+    // through the API's tools parameter, so only a short pointer is needed.
+    parts.push(
+      '',
+      '## File tools',
+      'You have native tools to read and edit files (read_file, write_file, edit_file). '
+        + 'Use them to inspect and change files instead of shell cat/sed. Read a file before editing it.',
+    );
+  } else {
+    parts.push('', builtinToolsBlock());
+  }
   if (projectBlock) parts.push('', '## Project map', projectBlock);
   if (memoryText) parts.push('', memoryText);
   if (skillsText) parts.push('', skillsText);
-  if (mcpText) parts.push('', mcpText);
+  // In native mode, MCP tools are sent via the API — skip the text protocol block.
+  if (mcpText && !nativeTools) parts.push('', mcpText);
   return parts.join('\n');
 }

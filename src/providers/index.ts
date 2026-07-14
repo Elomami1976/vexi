@@ -7,7 +7,10 @@ import type { Provider, ProviderId } from './types.js';
 import { PROVIDER_INFO } from './types.js';
 import { createAnthropicProvider } from './anthropic.js';
 import { createOpenAICompatProvider } from './openai-compat.js';
+import { defaultModelFor } from './manifest.js';
 import type { VexiConfig } from '../config.js';
+
+export { refreshManifest } from './manifest.js';
 
 export { detectProvider, sanitizeKey, PROVIDER_PATTERNS } from './detect.js';
 export { PROVIDER_INFO, ProviderError } from './types.js';
@@ -30,12 +33,27 @@ const BASE_URLS: Partial<Record<ProviderId, string>> = {
   minimax:   'https://api.minimax.chat/v1',                    // MiniMax-Text-01 — free tier
 };
 
+/**
+ * Provider ids whose APIs reliably support native function-calling. Others
+ * (and unknown URL-based endpoints) fall back to the text `vexi-tool` protocol.
+ */
+const NATIVE_TOOL_PROVIDERS = new Set<string>([
+  'anthropic', 'openai', 'openrouter', 'groq', 'gemini', 'mistral',
+  'cerebras', 'deepseek', 'qwen', 'moonshot', 'glm',
+]);
+
+/** Whether native function-calling should be used for a given provider id. */
+export function providerSupportsNativeTools(id: string): boolean {
+  return NATIVE_TOOL_PROVIDERS.has(id);
+}
+
 export function createProvider(id: ProviderId, apiKey: string, model?: string): Provider {
   const info = PROVIDER_INFO[id];
   if (!info) {
     throw new Error(`Unknown provider "${id}". Run \`vexi config reset\` to reconfigure.`);
   }
-  const resolvedModel = model ?? info.defaultModel;
+  // Prefer an explicit model, then a remote-manifest default, then the compiled-in default.
+  const resolvedModel = model ?? defaultModelFor(id, info.defaultModel);
 
   if (id === 'anthropic') {
     return createAnthropicProvider(apiKey, resolvedModel);
@@ -52,6 +70,7 @@ export function createProvider(id: ProviderId, apiKey: string, model?: string): 
     apiKey,
     model: resolvedModel,
     extraHeaders,
+    supportsTools: providerSupportsNativeTools(id),
   });
 }
 
@@ -66,7 +85,7 @@ export function createProviderFromConfig(config: VexiConfig): Provider {
     return createProvider(config.provider as ProviderId, config.apiKey, config.model);
   }
 
-  const model = config.model ?? 'gpt-4o';
+  const model = config.model ?? defaultModelFor(config.provider, 'gpt-4o');
 
   if (config.provider === 'anthropic') {
     return createAnthropicProvider(config.apiKey, model, config.baseUrl);
@@ -88,5 +107,6 @@ export function createProviderFromConfig(config: VexiConfig): Provider {
     model,
     extraHeaders,
     extraBody,
+    supportsTools: providerSupportsNativeTools(config.provider),
   });
 }
