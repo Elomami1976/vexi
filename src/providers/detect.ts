@@ -45,11 +45,19 @@ export const PROVIDER_PATTERNS: ReadonlyArray<{ provider: ProviderId; pattern: R
 ];
 
 /**
- * Sanitize a pasted API key: trim whitespace/newlines and strip
- * surrounding quotes (users often paste keys with extra characters).
+ * Sanitize a pasted API key: strip characters that can't be sent in an HTTP
+ * header, trim whitespace/newlines, and strip surrounding quotes.
+ *
+ * API keys are always printable ASCII, but pasting one — especially on an
+ * RTL/multilingual system — can silently pull in invisible bidi marks
+ * (U+200E/U+200F), a non-breaking space, smart quotes, or a stray newline.
+ * `fetch()` then rejects the Authorization header with a cryptic
+ * "character … has a value greater than 255" error on *every* request. We
+ * drop anything outside printable ASCII up front so that never happens.
  */
 export function sanitizeKey(raw: string): string {
-  let key = raw.trim();
+  // Keep only space + printable ASCII (0x20–0x7E); trim() handles edge spaces.
+  let key = raw.replace(/[^\x20-\x7E]/g, '').trim();
   // Strip matching surrounding quotes ("key", 'key', `key`)
   while (key.length >= 2 && `"'\``.includes(key[0]) && key[0] === key[key.length - 1]) {
     key = key.slice(1, -1).trim();
