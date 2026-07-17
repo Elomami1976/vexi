@@ -8,7 +8,7 @@
 
 import type { VexiConfig } from './config.js';
 import { saveConfig } from './config.js';
-import { identifyFromUrl, discoverModels } from './endpoint.js';
+import { identifyFromUrl, discoverModels, verifyConnection } from './endpoint.js';
 import type { UrlIdentity } from './endpoint.js';
 
 export { loadConfig, saveConfig } from './config.js';
@@ -20,6 +20,7 @@ export interface OnboardingIO {
 
 type DiscoverFn = (identity: UrlIdentity, apiKey: string) => Promise<string[]>;
 type SaveFn = (config: VexiConfig) => Promise<void>;
+type VerifyFn = (identity: UrlIdentity, apiKey: string, model: string) => Promise<void>;
 
 /**
  * Run the interactive setup wizard.
@@ -30,12 +31,14 @@ type SaveFn = (config: VexiConfig) => Promise<void>;
  * 3. Ask for the API key
  * 4. Discover available models (or ask for a manual entry on failure)
  * 5. Let the user choose a model (or enter one manually)
- * 6. Save config and return it
+ * 6. Verify the connection with one real inference request
+ * 7. Save config and return it
  */
 export async function runOnboarding(
   io: OnboardingIO,
   discoverFn: DiscoverFn = discoverModels,
   saveFn: SaveFn = saveConfig,
+  verifyFn: VerifyFn = verifyConnection,
 ): Promise<VexiConfig> {
   io.write('');
   io.write('Welcome to Vexi setup. Let\'s configure your AI provider.');
@@ -112,7 +115,22 @@ export async function runOnboarding(
   io.write(`  Using model: ${model}`);
   io.write('');
 
-  // Step 6: Save
+  // Step 6: Verify with a real inference request. Discovery failing above is
+  // fine (manual entry covers it), but success must never be reported without
+  // a live response from the chosen url/key/model combo.
+  io.write('  Verifying connection…');
+  try {
+    await verifyFn(identity, apiKey.trim(), model);
+  } catch (err) {
+    io.write(`  ✗ Connection failed: ${(err as Error).message}`);
+    throw new Error(
+      `Connection verification failed — config was not saved. Run \`vexi setup\` again. (${(err as Error).message})`,
+    );
+  }
+  io.write('  ✓ Verified — got a live response.');
+  io.write('');
+
+  // Step 7: Save
   const config: VexiConfig = {
     provider: identity.provider,
     displayName: identity.displayName,

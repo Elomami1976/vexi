@@ -208,3 +208,93 @@ export async function discoverModels(
   const json = (await res.json()) as { data?: Array<{ id: string }> };
   return (json.data ?? []).map((m) => m.id).filter(Boolean);
 }
+
+/** Cap a provider error body so a huge HTML/JSON blob doesn't flood the terminal. */
+function truncateBody(body: string): string {
+  return body.length > 300 ? `${body.slice(0, 300)}…` : body;
+}
+
+/**
+ * Verify that the chosen url/key/model combination can actually serve a request.
+ *
+ * Unlike discoverModels (GET /models), this sends ONE minimal real inference
+ * call so onboarding can report success based on a live response rather than
+ * merely writing config to disk. A 2xx counts as verified; the body is not
+ * parsed for content.
+ *
+ * Accepts an optional fetchFn for testability (defaults to globalThis.fetch).
+ */
+export async function verifyConnection(
+  identity: UrlIdentity,
+  apiKey: string,
+  model: string,
+  fetchFn: (url: string, init?: RequestInit) => Promise<Response> = globalThis.fetch,
+): Promise<void> {
+  if (identity.apiShape === 'anthropic') {
+    const res = await fetchFn(`${identity.baseUrl}/messages`, {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 1,
+        messages: [{ role: 'user', content: 'ping' }],
+      }),
+    });
+    if (!res.ok) {
+      const body = truncateBody(await res.text());
+      throw new Error(`Connection test failed: HTTP ${res.status} — ${body}`);
+    }
+    return;
+  }
+
+  // OpenAI-compatible shape.
+  const res = await fetchFn(`${identity.baseUrl}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 1,
+      messages: [{ role: 'user', content: 'ping' }],
+    }),
+  });
+  if (res.ok) {
+    return;
+  }
+
+  const body = await res.text();
+
+  // Gemini is identified with apiShape 'openai' via its OpenAI-compat layer
+  // (.../v1beta/openai/chat/completions), but that layer does not always accept
+  // the standard OpenAI request path/shape. If the compat POST 404s (or the body
+  // says the path/method is unsupported), fall back once to Gemini's native
+  // generateContent endpoint, which lives as a SIBLING of the /openai segment
+  // (.../v1beta/models/<model>:generateContent) — hence we strip /openai here.
+  if (
+    identity.provider === 'gemini' &&
+    (res.status === 404 || /not\s*found|unsupported|method|path/i.test(body))
+  ) {
+    const nativeRoot = identity.baseUrl.replace(/\/openai\/?$/, '');
+    const nativeRes = await fetchFn(`${nativeRoot}/models/${model}:generateContent`, {
+      method: 'POST',
+      headers: {
+        'x-goog-api-key': apiKey,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ contents: [{ parts: [{ text: 'ping' }] }] }),
+    });
+    if (nativeRes.ok) {
+      return;
+    }
+    const nativeBody = truncateBody(await nativeRes.text());
+    throw new Error(`Connection test failed: HTTP ${nativeRes.status} — ${nativeBody}`);
+  }
+
+  throw new Error(`Connection test failed: HTTP ${res.status} — ${truncateBody(body)}`);
+}

@@ -12,9 +12,11 @@ function makeIO(answers: string[]): { io: OnboardingIO; lines: string[] } {
   return { io, lines };
 }
 
+const okVerify = () => vi.fn().mockResolvedValue(undefined);
+
 describe('runOnboarding', () => {
-  it('happy path: discovers models and saves config', async () => {
-    const { io } = makeIO([
+  it('happy path: discovers models, verifies connection, and saves config', async () => {
+    const { io, lines } = makeIO([
       'https://openrouter.ai/api/v1',   // URL
       'sk-or-test',                       // API key
       '1',                                // pick model #1
@@ -22,8 +24,9 @@ describe('runOnboarding', () => {
 
     const discoverFn = vi.fn().mockResolvedValue(['openai/gpt-4o', 'mistralai/mistral-7b']);
     const saveFn = vi.fn().mockResolvedValue(undefined);
+    const verifyFn = okVerify();
 
-    const config = await runOnboarding(io, discoverFn, saveFn);
+    const config = await runOnboarding(io, discoverFn, saveFn, verifyFn);
 
     expect(config.provider).toBe('openrouter');
     expect(config.displayName).toBe('OpenRouter');
@@ -35,7 +38,13 @@ describe('runOnboarding', () => {
       expect.objectContaining({ provider: 'openrouter' }),
       'sk-or-test',
     );
+    expect(verifyFn).toHaveBeenCalledWith(
+      expect.objectContaining({ provider: 'openrouter' }),
+      'sk-or-test',
+      'openai/gpt-4o',
+    );
     expect(saveFn).toHaveBeenCalledWith(config);
+    expect(lines).toContain('  ✓ Verified — got a live response.');
   });
 
   it('falls back to manual model entry when /models fails', async () => {
@@ -48,15 +57,60 @@ describe('runOnboarding', () => {
     const discoverFn = vi.fn().mockRejectedValue(new Error('HTTP 401. Enter the model ID manually.'));
     const saveFn = vi.fn().mockResolvedValue(undefined);
 
-    const config = await runOnboarding(io, discoverFn, saveFn);
+    const config = await runOnboarding(io, discoverFn, saveFn, okVerify());
 
     expect(config.model).toBe('llama-3.3-70b-versatile');
     expect(saveFn).toHaveBeenCalledWith(config);
   });
 
+  it('discovery failure alone never reaches save: manual entry + passing verify still succeeds', async () => {
+    const { io, lines } = makeIO([
+      'https://api.groq.com/openai/v1',
+      'gsk_test',
+      'llama-3.3-70b-versatile',
+    ]);
+
+    const discoverFn = vi.fn().mockRejectedValue(new Error('ECONNREFUSED'));
+    const saveFn = vi.fn().mockResolvedValue(undefined);
+    const verifyFn = okVerify();
+
+    const config = await runOnboarding(io, discoverFn, saveFn, verifyFn);
+
+    // Discovery failed, but verification (the real health check) ran and passed.
+    expect(verifyFn).toHaveBeenCalledWith(
+      expect.objectContaining({ provider: 'groq' }),
+      'gsk_test',
+      'llama-3.3-70b-versatile',
+    );
+    expect(saveFn).toHaveBeenCalledWith(config);
+    expect(lines).toContain('Configuration saved. You can now run: vexi');
+  });
+
+  it('does NOT save and throws when verification fails', async () => {
+    const { io, lines } = makeIO([
+      'https://openrouter.ai/api/v1',
+      'sk-or-bad',
+      '1',
+    ]);
+
+    const discoverFn = vi.fn().mockResolvedValue(['openai/gpt-4o']);
+    const saveFn = vi.fn().mockResolvedValue(undefined);
+    const verifyFn = vi.fn().mockRejectedValue(
+      new Error('Connection test failed: HTTP 401 — {"error":"invalid key"}'),
+    );
+
+    await expect(runOnboarding(io, discoverFn, saveFn, verifyFn)).rejects.toThrow(
+      'config was not saved',
+    );
+
+    expect(saveFn).not.toHaveBeenCalled();
+    expect(lines.some((l) => l.includes('✗ Connection failed'))).toBe(true);
+    expect(lines).not.toContain('Configuration saved. You can now run: vexi');
+  });
+
   it('throws when no URL is provided', async () => {
     const { io } = makeIO(['']);  // empty URL
-    await expect(runOnboarding(io, vi.fn(), vi.fn())).rejects.toThrow('No URL provided');
+    await expect(runOnboarding(io, vi.fn(), vi.fn(), okVerify())).rejects.toThrow('No URL provided');
   });
 
   it('throws when no API key is provided', async () => {
@@ -65,7 +119,7 @@ describe('runOnboarding', () => {
       '',                                 // empty API key
     ]);
     const discoverFn = vi.fn().mockResolvedValue([]);
-    await expect(runOnboarding(io, discoverFn, vi.fn())).rejects.toThrow('No API key provided');
+    await expect(runOnboarding(io, discoverFn, vi.fn(), okVerify())).rejects.toThrow('No API key provided');
   });
 
   it('accepts a typed model id directly instead of a number', async () => {
@@ -78,7 +132,7 @@ describe('runOnboarding', () => {
     const discoverFn = vi.fn().mockResolvedValue(['gpt-4o', 'gpt-4o-mini']);
     const saveFn = vi.fn().mockResolvedValue(undefined);
 
-    const config = await runOnboarding(io, discoverFn, saveFn);
+    const config = await runOnboarding(io, discoverFn, saveFn, okVerify());
     expect(config.model).toBe('o3-mini');
   });
 
@@ -92,7 +146,7 @@ describe('runOnboarding', () => {
     const discoverFn = vi.fn().mockResolvedValue(['gpt-4o', 'gpt-4o-mini']);
     const saveFn = vi.fn().mockResolvedValue(undefined);
 
-    const config = await runOnboarding(io, discoverFn, saveFn);
+    const config = await runOnboarding(io, discoverFn, saveFn, okVerify());
     expect(config.model).toBe('gpt-4o');
   });
 });

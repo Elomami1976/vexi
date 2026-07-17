@@ -14,7 +14,7 @@ vexi
 ## Key features
 
 - **BYOK (Bring Your Own Key)**: Auto-detects your provider from the key format. Supports 13 providers: Anthropic Claude, OpenAI, Groq, Google Gemini, OpenRouter, Cerebras, Zhipu AI (GLM), DeepSeek, Alibaba Qwen, Kimi (Moonshot), MiniMax, Mistral, and Z.ai.
-- **URL-based setup**: `vexi setup` — paste any OpenAI-compatible endpoint URL (Ollama, LM Studio, custom proxies) and Vexi detects the provider and fetches available models automatically.
+- **URL-based setup**: `vexi setup` — paste any OpenAI-compatible endpoint URL (Ollama, LM Studio, custom proxies) and Vexi detects the provider, fetches available models automatically, and verifies the connection with a real request before saving the config.
 - **Context Compression Engine**: Keeps a running summary of your decisions across sessions. Never re-explains your project.
 - **Full project understanding**: Scans the entire codebase on startup (respects .gitignore, skips node_modules) and injects a compact map into every AI prompt.
 - **Multi-language build support**: Runs pip install, gcc, javac, cargo, gradle, and more directly from chat. Works with Python, Java, C, C++, Rust, Go, and JavaScript.

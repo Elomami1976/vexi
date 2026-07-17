@@ -47,7 +47,7 @@ vexi --version
 
 ## 3. Connect an AI with `vexi setup`
 
-`vexi setup` is the clean, recommended way to configure your AI. It starts from the endpoint **URL**, so there is no guessing — it detects the provider, fetches the live model list, and lets you pick one.
+`vexi setup` is the clean, recommended way to configure your AI. It starts from the endpoint **URL**, so there is no guessing — it detects the provider, fetches the live model list, lets you pick one, and verifies the connection with a real request before saving — so a bad key or wrong URL fails at setup, not on your first chat.
 
 ```
 vexi setup
@@ -61,6 +61,8 @@ It asks three things, in order — **URL → key → model**:
 ? Paste your API key       › sk-or-...
   Fetching available models…
 ? Choose a model           › deepseek/deepseek-chat-v3:free
+  Verifying connection…
+  ✓ Verified — got a live response
   ✓ Saved — run `vexi` to start
 ```
 
@@ -262,7 +264,7 @@ vexi --version
 
 ## ٣. وصل نموذج ذكاء عبر `vexi setup`
 
-‏`vexi setup` هو الطريقة النظيفة والمُوصى بها لإعداد الذكاء الاصطناعي. يبدأ من **رابط** نقطة النهاية، فلا تخمين — يتعرّف على المزوّد، ويجلب قائمة النماذج الحيّة، ويتيح لك الاختيار.
+‏`vexi setup` هو الطريقة النظيفة والمُوصى بها لإعداد الذكاء الاصطناعي. يبدأ من **رابط** نقطة النهاية، فلا تخمين — يتعرّف على المزوّد، ويجلب قائمة النماذج الحيّة، ويتيح لك الاختيار، ثم يتحقق من الاتصال بطلب حقيقي قبل الحفظ — فيفشل المفتاح الخاطئ أو الرابط الخاطئ أثناء الإعداد، لا في أول محادثة.
 
 ```
 vexi setup
@@ -276,6 +278,8 @@ vexi setup
 ? Paste your API key       › sk-or-...
   Fetching available models…
 ? Choose a model           › deepseek/deepseek-chat-v3:free
+  Verifying connection…
+  ✓ Verified — got a live response
   ✓ Saved — run `vexi` to start
 ```
 
@@ -477,7 +481,7 @@ vexi --version
 
 ## 3. Connecter une IA avec `vexi setup`
 
-`vexi setup` est la façon propre et recommandée de configurer votre IA. Elle part de l'**URL** du point d'accès : aucune devinette — elle détecte le fournisseur, récupère la liste des modèles en direct et vous laisse choisir.
+`vexi setup` est la façon propre et recommandée de configurer votre IA. Elle part de l'**URL** du point d'accès : aucune devinette — elle détecte le fournisseur, récupère la liste des modèles en direct, vous laisse choisir, puis vérifie la connexion avec une vraie requête avant d'enregistrer — une mauvaise clé ou URL échoue donc dès la configuration, pas à la première conversation.
 
 ```
 vexi setup
@@ -491,6 +495,8 @@ Elle demande trois choses, dans l'ordre — **URL → clé → modèle** :
 ? Paste your API key       › sk-or-...
   Fetching available models…
 ? Choose a model           › deepseek/deepseek-chat-v3:free
+  Verifying connection…
+  ✓ Verified — got a live response
   ✓ Saved — run `vexi` to start
 ```
 
@@ -692,7 +698,7 @@ vexi --version
 
 ## 3. Conectar una IA con `vexi setup`
 
-`vexi setup` es la forma limpia y recomendada de configurar tu IA. Parte de la **URL** del endpoint: sin adivinar — detecta el proveedor, obtiene la lista de modelos en vivo y te deja elegir.
+`vexi setup` es la forma limpia y recomendada de configurar tu IA. Parte de la **URL** del endpoint: sin adivinar — detecta el proveedor, obtiene la lista de modelos en vivo, te deja elegir y verifica la conexión con una petición real antes de guardar — así una clave o URL incorrecta falla en el setup, no en tu primer chat.
 
 ```
 vexi setup
@@ -706,6 +712,8 @@ Pide tres cosas, en orden — **URL → clave → modelo**:
 ? Paste your API key       › sk-or-...
   Fetching available models…
 ? Choose a model           › deepseek/deepseek-chat-v3:free
+  Verifying connection…
+  ✓ Verified — got a live response
   ✓ Saved — run `vexi` to start
 ```
 
@@ -907,7 +915,7 @@ vexi --version
 
 ## 3. Conectar uma IA com `vexi setup`
 
-`vexi setup` é a maneira limpa e recomendada de configurar sua IA. Ela parte da **URL** do endpoint: sem adivinhação — detecta o provedor, busca a lista de modelos ao vivo e deixa você escolher.
+`vexi setup` é a maneira limpa e recomendada de configurar sua IA. Ela parte da **URL** do endpoint: sem adivinhação — detecta o provedor, busca a lista de modelos ao vivo, deixa você escolher e verifica a conexão com uma requisição real antes de salvar — assim uma chave ou URL errada falha no setup, não no seu primeiro chat.
 
 ```
 vexi setup
@@ -921,6 +929,8 @@ Ela pede três coisas, em ordem — **URL → chave → modelo**:
 ? Paste your API key       › sk-or-...
   Fetching available models…
 ? Choose a model           › deepseek/deepseek-chat-v3:free
+  Verifying connection…
+  ✓ Verified — got a live response
   ✓ Saved — run `vexi` to start
 ```
 
